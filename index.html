@@ -273,16 +273,21 @@ h3{font-size:16px;margin:0 0 8px}
   <div id="inspPath" class="path"></div>
   <h2 id="inspTitle"></h2>
   <div id="inspPrev" class="note"></div>
+  <label>記録する項目</label>
+  <div class="seg" id="iMode">
+    <button data-m="h">運転時間(h)</button>
+    <button data-m="kwh">消費電力量(kWh)</button>
+  </div>
   <div class="sub" style="margin-top:8px">すべて空欄でも保存できます</div>
   <div class="row">
     <div>
       <h3 style="margin:12px 0 0">MP1</h3>
-      <label for="iMp1">運転時間(h)</label><input id="iMp1" inputmode="decimal" autocomplete="off"><div id="dMp1" class="sub"></div>
+      <label for="iMp1" class="lMain">運転時間(h)</label><input id="iMp1" inputmode="decimal" autocomplete="off"><div id="dMp1" class="sub"></div>
       <label for="iA1">最大電流(A)</label><input id="iA1" inputmode="decimal" autocomplete="off"><div id="dA1" class="sub"></div>
     </div>
     <div>
       <h3 style="margin:12px 0 0">MP2</h3>
-      <label for="iMp2">運転時間(h)</label><input id="iMp2" inputmode="decimal" autocomplete="off"><div id="dMp2" class="sub"></div>
+      <label for="iMp2" class="lMain">運転時間(h)</label><input id="iMp2" inputmode="decimal" autocomplete="off"><div id="dMp2" class="sub"></div>
       <label for="iA2">最大電流(A)</label><input id="iA2" inputmode="decimal" autocomplete="off"><div id="dA2" class="sub"></div>
     </div>
   </div>
@@ -396,8 +401,8 @@ const lastInsp = pid => lastMap()[pid];
 function inspSummary(i){
   if (!i) return '';
   const parts = [];
-  [['MP1', i.mp1, i.a1], ['MP2', i.mp2, i.a2]].forEach(([n, h, a]) => {
-    const v = [h != null ? h + 'h' : '', a != null ? a + 'A' : ''].filter(Boolean).join('・');
+  [['MP1', i.mp1, i.e1, i.a1], ['MP2', i.mp2, i.e2, i.a2]].forEach(([n, h, e, a]) => {
+    const v = [h != null ? h + 'h' : '', e != null ? e + 'kWh' : '', a != null ? a + 'A' : ''].filter(Boolean).join('・');
     if (v) parts.push(`${n} ${v}`);
   });
   if (i.other) parts.push(i.other);
@@ -563,35 +568,46 @@ function doInspect(p){
   $('inspPath').textContent = [blockOf(p), distLabel(p.district)].filter(Boolean).join(' > ') + (KEYS[p.key] ? ' ・ ' + KEYS[p.key] : '');
   $('inspTitle').textContent = '点検:' + dispName(p);
   $('inspPrev').textContent = li ? `前回 ${fmtDate(li.at)}\n${inspSummary(li) || '(メモなし)'}` : '前回の記録はありません';
-  IFIELDS.forEach(f => $(f.in).value = ''); $('iOther').value = '';
-  showDiff();
+  IFIELDS().forEach(f => $(f.in).value = ''); $('iOther').value = '';
+  setMode('h'); // 初期は運転時間
   openSheet('insp');
 }
-// 点検の数値項目:キー・入力欄・前回表示欄・単位
-const IFIELDS = [
-  { k: 'mp1', in: 'iMp1', d: 'dMp1', u: 'h' }, { k: 'a1', in: 'iA1', d: 'dA1', u: 'A' },
-  { k: 'mp2', in: 'iMp2', d: 'dMp2', u: 'h' }, { k: 'a2', in: 'iA2', d: 'dA2', u: 'A' },
-];
+// 点検の数値項目:キー・入力欄・前回表示欄・単位(運転時間/消費電力量は切替)
+let iMode = 'h';
+const IFIELDS = () => {
+  const h = iMode === 'h';
+  return [
+    { k: h ? 'mp1' : 'e1', in: 'iMp1', d: 'dMp1', u: h ? 'h' : 'kWh' }, { k: 'a1', in: 'iA1', d: 'dA1', u: 'A' },
+    { k: h ? 'mp2' : 'e2', in: 'iMp2', d: 'dMp2', u: h ? 'h' : 'kWh' }, { k: 'a2', in: 'iA2', d: 'dA2', u: 'A' },
+  ];
+};
+function setMode(m){
+  iMode = m;
+  $('iMode').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  document.querySelectorAll('#insp .lMain').forEach(l => l.textContent = m === 'h' ? '運転時間(h)' : '消費電力量(kWh)');
+  showDiff();
+}
+$('iMode').querySelectorAll('button').forEach(b => b.onclick = () => setMode(b.dataset.m));
 // 項目ごとに、値が入っている最新の記録と比べる(空欄の回は飛ばす)
 function prevVal(pid, k){
   const r = insps.filter(i => i.pointId === pid && i[k] != null).sort((a,b) => b.at.localeCompare(a.at))[0];
   return r ? r[k] : null;
 }
 function showDiff(){
-  IFIELDS.forEach(({ k, in: i, d, u }) => {
+  IFIELDS().forEach(({ k, in: i, d, u }) => {
     const v = num($(i).value), pv = inspP ? prevVal(inspP.id, k) : null;
     $(d).textContent = v != null && pv != null ? `前回比 ${v - pv >= 0 ? '+' : ''}${+(v - pv).toFixed(1)}${u}(前回 ${pv}${u})` : (pv != null ? `前回 ${pv}${u}` : '');
   });
 }
-IFIELDS.forEach(f => $(f.in).oninput = showDiff);
+IFIELDS().forEach(f => $(f.in).oninput = showDiff);
 $('iSave').onclick = () => {
-  if (IFIELDS.some(f => $(f.in).value.trim() && num($(f.in).value) == null)) { toast('運転時間・電流は数字で入力してください'); return; }
-  const vals = Object.fromEntries(IFIELDS.map(f => [f.k, num($(f.in).value)]));
+  if (IFIELDS().some(f => $(f.in).value.trim() && num($(f.in).value) == null)) { toast('数値の欄は数字で入力してください'); return; }
+  const vals = Object.fromEntries(IFIELDS().map(f => [f.k, num($(f.in).value)]));
   addInsp({ pointId: inspP.id, ...vals, other: $('iOther').value.trim() });
   closeSheets(); refresh(); toast(`「${dispName(inspP)}」の点検を記録しました`);
 };
 function addInsp(r){
-  const rec = { id: uid(), at: new Date().toISOString(), mp1: null, mp2: null, a1: null, a2: null, other: '', ...r };
+  const rec = { id: uid(), at: new Date().toISOString(), mp1: null, mp2: null, e1: null, e2: null, a1: null, a2: null, other: '', ...r };
   insps.push(rec); saveInsps();
   if (patrol && patrol.ids.includes(rec.pointId) && !patrol.done[rec.pointId]) { patrol.done[rec.pointId] = rec.id; savePatrol(); }
   return rec;
@@ -952,10 +968,10 @@ $('ixShare').onclick = () => {
   const v = $('ixT').value, from = $('ixFrom').value, to = $('ixTo').value;
   const rows = insps.filter(i => { const p = byId(i.pointId); if (!p || !matchTarget(v)(p)) return false; const d = localDay(i.at); return (!from || d >= from) && (!to || d <= to); })
     .sort((a,b) => a.at.localeCompare(b.at))
-    .map(i => { const p = byId(i.pointId); return [fmtDate(i.at), blockOf(p), p.district, dispName(p), TAGS[p.tag], p.tag === 'mp' ? KEYS[p.key] || '' : '', i.mp1 ?? '', i.a1 ?? '', i.mp2 ?? '', i.a2 ?? '', i.other, p.lat, p.lng]; });
+    .map(i => { const p = byId(i.pointId); return [fmtDate(i.at), blockOf(p), p.district, dispName(p), TAGS[p.tag], p.tag === 'mp' ? KEYS[p.key] || '' : '', i.mp1 ?? '', i.e1 ?? '', i.a1 ?? '', i.mp2 ?? '', i.e2 ?? '', i.a2 ?? '', i.other, p.lat, p.lng]; });
   if (!rows.length) { toast('対象の点検記録がありません'); return; }
   const name = safe(`点検記録_${targetTitle(v)}_${from || '最初'}〜${to || stamp()}`) + '.csv';
-  deliver(toCSVText(['点検日時','ブロック','地区','地点名','種類','カギ種別','MP1運転時間(h)','MP1最大電流(A)','MP2運転時間(h)','MP2最大電流(A)','その他','緯度','経度'], rows), name, 'text/csv');
+  deliver(toCSVText(['点検日時','ブロック','地区','地点名','種類','カギ種別','MP1運転時間(h)','MP1消費電力量(kWh)','MP1最大電流(A)','MP2運転時間(h)','MP2消費電力量(kWh)','MP2最大電流(A)','その他','緯度','経度'], rows), name, 'text/csv');
 };
 
 // ---------- バックアップ ----------
