@@ -35,9 +35,11 @@ input,textarea,select{width:100%;padding:12px;border:1px solid var(--line);borde
 textarea{min-height:72px}
 .item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--fg);font-size:16px}
 .item .t{font-weight:700}
-.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin-right:6px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin:2px 6px 2px 0;white-space:nowrap}
 .tag.mp{color:var(--mp);border-color:var(--mp)}
 .tag.site{color:var(--site);border-color:var(--site)}
+.tag.blk{color:#fff;font-weight:700}
+.dot{display:inline-block;width:12px;height:12px;border-radius:6px;vertical-align:-1px;margin-right:6px}
 .unnamed{color:var(--warn)}
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:10}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--card);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));z-index:11;display:none;max-width:640px;margin:0 auto}
@@ -63,15 +65,20 @@ h3{font-size:16px;margin:0 0 8px}
 .mini{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;min-width:44px;height:40px;font-size:15px;padding:0 8px}
 .mini.go{color:var(--pri);font-weight:700}
 .mini.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+.mini:disabled{opacity:.4}
 .dchk{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
 .dchk input{width:22px;height:22px;flex:none}
-.dchk:last-child{border-bottom:0}
+.dchk.child{padding-left:28px}
 .prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:8px 0}
 .prog div{height:100%;background:var(--ok)}
-.drow{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-.drow input{flex:1}
+.mrow{border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
+.mrow .row{align-items:center}
+.sw{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sw button{width:30px;height:30px;border-radius:15px;border:2px solid transparent;padding:0}
+.sw button.on{border-color:var(--fg);box-shadow:0 0 0 2px var(--card) inset}
 .hist{border-bottom:1px solid var(--line);padding:10px 0}
 .hist:last-child{border-bottom:0}
+.path{font-size:13px;color:var(--sub);margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -97,22 +104,26 @@ h3{font-size:16px;margin:0 0 8px}
       <button id="selToggle" class="btn" style="flex:1">選択</button>
     </div>
     <div class="row" style="margin-top:8px">
+      <select id="blockFilter"></select>
       <select id="distFilter"></select>
+    </div>
+    <div class="row" style="margin-top:8px">
       <select id="tagFilter">
         <option value="">すべての種類</option>
         <option value="mp">マンホールポンプ</option>
+        <option value="mp:200">MP・200番キー</option>
+        <option value="mp:round">MP・丸カギ</option>
         <option value="site">施工現場</option>
       </select>
-    </div>
-    <div class="row" style="margin-top:8px">
       <select id="sortSel">
         <option value="near">近い順</option>
+        <option value="tree">ブロック・地区順</option>
         <option value="old">点検が古い順</option>
         <option value="name">名前順</option>
         <option value="new">登録が新しい順</option>
       </select>
-      <button id="distManage" class="btn">地区の管理</button>
     </div>
+    <button id="manage" class="btn wide" style="margin-top:8px">ブロック・地区の管理</button>
     <div id="count" class="sub" style="margin:12px 0 8px"></div>
     <div id="list"></div>
   </section>
@@ -122,6 +133,7 @@ h3{font-size:16px;margin:0 0 8px}
     <div id="pStart">
       <div class="card">
         <h3>巡回する地区を選ぶ</h3>
+        <div class="sub" style="margin-bottom:4px">ブロック名にチェックすると、その中の地区をまとめて選べます。</div>
         <div id="pDists"></div>
         <button id="pBegin" class="btn pri wide" style="margin-top:12px">巡回を開始</button>
         <div class="sub" style="margin-top:8px">一覧の「選択」から、地点を個別に選んで始めることもできます。</div>
@@ -157,8 +169,8 @@ h3{font-size:16px;margin:0 0 8px}
   <section id="v-exp" class="view">
     <div class="card">
       <h3>地図用ファイル</h3>
-      <label for="expDist">対象地区</label>
-      <select id="expDist"></select>
+      <label for="expT">対象</label>
+      <select id="expT"></select>
       <label for="expFmt">形式</label>
       <select id="expFmt">
         <option value="kml">KML(Googleマイマップ推奨)</option>
@@ -166,12 +178,12 @@ h3{font-size:16px;margin:0 0 8px}
         <option value="gpx">GPX</option>
       </select>
       <button id="expShare" class="btn pri wide" style="margin-top:16px">共有・保存</button>
-      <div class="note">KMLは地区ごとにレイヤが分かれます。マイマップに取り込むときは、古いレイヤを削除してから読み込んでください。</div>
+      <div class="note">マイマップでは、レイヤの「スタイル」→「データ列でグループ化」で「ブロック」や「地区」を選ぶと、色分けして表示できます。更新するときは、古いレイヤを削除してから読み込んでください。</div>
     </div>
     <div class="card">
       <h3>点検記録(CSV)</h3>
-      <label for="ixDist">対象地区</label>
-      <select id="ixDist"></select>
+      <label for="ixT">対象</label>
+      <select id="ixT"></select>
       <div class="row">
         <div><label for="ixFrom">開始日</label><input id="ixFrom" type="date"></div>
         <div><label for="ixTo">終了日</label><input id="ixTo" type="date"></div>
@@ -215,11 +227,22 @@ h3{font-size:16px;margin:0 0 8px}
     <button data-t="mp">マンホールポンプ</button>
     <button data-t="site">施工現場</button>
   </div>
-  <label for="fName">地点名</label>
-  <input id="fName" placeholder="未入力なら後で付けられます">
+  <label for="fBlock">ブロック</label>
+  <select id="fBlock"></select>
+  <input id="fBlockNew" placeholder="新しいブロック名" style="display:none;margin-top:8px">
   <label for="fDist">地区</label>
   <select id="fDist"></select>
   <input id="fDistNew" placeholder="新しい地区名" style="display:none;margin-top:8px">
+  <label for="fName" id="fNameLabel">ポンプ名</label>
+  <input id="fName" placeholder="未入力なら後で付けられます">
+  <div id="fKeyWrap">
+    <label>カギ種別</label>
+    <div class="seg" id="fKey">
+      <button data-k="">未設定</button>
+      <button data-k="200">200番キー</button>
+      <button data-k="round">丸カギ</button>
+    </div>
+  </div>
   <label for="fNote">備考(地点の情報)</label>
   <textarea id="fNote" placeholder="入口は裏側、など"></textarea>
   <div id="fMeta" class="sub" style="margin-top:8px"></div>
@@ -232,6 +255,7 @@ h3{font-size:16px;margin:0 0 8px}
 
 <!-- 地点のメニュー -->
 <div id="act" class="sheet">
+  <div id="actPath" class="path"></div>
   <h2 id="actTitle"></h2>
   <div id="actMeta" class="sub"></div>
   <div style="display:grid;gap:8px;margin-top:16px">
@@ -246,15 +270,16 @@ h3{font-size:16px;margin:0 0 8px}
 
 <!-- 点検記録(マンホールポンプ) -->
 <div id="insp" class="sheet">
+  <div id="inspPath" class="path"></div>
   <h2 id="inspTitle"></h2>
   <div id="inspPrev" class="note"></div>
-  <label>運転時間</label>
+  <label>運転時間(空欄でもOK)</label>
   <div class="row">
     <div><label for="iMp1" style="margin-top:0">MP1(h)</label><input id="iMp1" inputmode="decimal" autocomplete="off"><div id="dMp1" class="sub"></div></div>
     <div><label for="iMp2" style="margin-top:0">MP2(h)</label><input id="iMp2" inputmode="decimal" autocomplete="off"><div id="dMp2" class="sub"></div></div>
   </div>
   <label for="iOther">その他</label>
-  <textarea id="iOther" placeholder="異常・気付いたこと"></textarea>
+  <textarea id="iOther" placeholder="気付いたことなど"></textarea>
   <div class="row" style="margin-top:16px">
     <button class="btn close">キャンセル</button>
     <button id="iSave" class="btn pri">点検済みにする</button>
@@ -268,13 +293,19 @@ h3{font-size:16px;margin:0 0 8px}
   <button class="btn close wide" style="margin-top:12px">閉じる</button>
 </div>
 
-<!-- 地区の管理 -->
-<div id="dist" class="sheet">
-  <h2>地区の管理</h2>
-  <div class="sub" style="margin-bottom:8px">名前を書き換えて「保存」すると、所属する地点もまとめて変わります。地点がない地区だけ削除できます。</div>
-  <div id="distRows"></div>
-  <label for="distNew">新しい地区</label>
-  <div class="drow"><input id="distNew" placeholder="地区名"><button id="distAdd" class="mini go">追加</button></div>
+<!-- ブロック・地区の管理 -->
+<div id="mng" class="sheet">
+  <h2>ブロック・地区の管理</h2>
+  <div class="sub">名前を書き換えて「保存」すると、中の地区や地点もまとめて変わります。中身が空のものだけ削除できます。</div>
+  <h3 style="margin-top:16px">ブロック</h3>
+  <div id="mBlocks"></div>
+  <div class="row"><input id="mBlockNew" placeholder="新しいブロック名" style="flex:3"><button id="mBlockAdd" class="mini go">追加</button></div>
+  <h3 style="margin-top:20px">地区</h3>
+  <div id="mDists"></div>
+  <div class="mrow">
+    <input id="mDistNew" placeholder="新しい地区名">
+    <div class="row" style="margin-top:8px"><select id="mDistNewBlock" style="flex:3"></select><button id="mDistAdd" class="mini go">追加</button></div>
+  </div>
   <button class="btn close wide" style="margin-top:8px">閉じる</button>
 </div>
 
@@ -283,29 +314,33 @@ h3{font-size:16px;margin:0 0 8px}
 <script>
 'use strict';
 // ---------- 設定 ----------
-const K = { P: 'pinlog.points.v1', D: 'pinlog.districts.v1', I: 'pinlog.insp.v1', T: 'pinlog.patrol.v1', LD: 'pinlog.lastDistrict' };
+const K = { P: 'pinlog.points.v1', D1: 'pinlog.districts.v1', D: 'pinlog.districts.v2', B: 'pinlog.blocks.v1', I: 'pinlog.insp.v1', T: 'pinlog.patrol.v1', LD: 'pinlog.lastDistrict' };
 const TAGS = { mp: 'マンホールポンプ', site: '施工現場' };
 const TAG_SHORT = { mp: 'MP', site: '施工現場' };
-const DUP_M = 30;      // この距離以内に既存地点があれば警告
+const KEYS = { '200': '200番キー', round: '丸カギ' };
+const PALETTE = ['#d93025', '#e8710a', '#9e7700', '#188038', '#12b5cb', '#1a73e8', '#a142f4', '#e52592', '#795548', '#5f6368'];
+const DUP_M = 30;      // この距離以内に既存地点があれば知らせる
 const GOOD_ACC = 30;   // 誤差がこれ以下なら「良好」
 const MAX_STOPS = 10;  // Googleマップに一度に送れる地点数(経由地9+目的地)
 
 // ---------- データ ----------
 function ld(k, def){ try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; } catch(e) { return def; } }
 function sv(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { toast('保存に失敗しました:' + e.message); } }
-let points = ld(K.P, []), districts = ld(K.D, []), insps = ld(K.I, []), patrol = ld(K.T, null);
-(function migrate(){ // 旧版(カテゴリ)からの移行
+let points = ld(K.P, []), blocks = ld(K.B, []), districts = ld(K.D, null), insps = ld(K.I, []), patrol = ld(K.T, null);
+(function migrate(){
   let ch = false;
+  if (!districts) { districts = ld(K.D1, []).map(n => ({ name: n, block: '' })); ch = true; } // 旧:地区名だけの配列
   points.forEach(p => {
     if (p.district === undefined) { p.district = p.category || ''; delete p.category; ch = true; }
     if (!TAGS[p.tag]) { p.tag = 'mp'; ch = true; }
+    if (p.key === undefined) { p.key = ''; ch = true; }
   });
-  const set = new Set(districts);
-  points.forEach(p => { if (p.district && !set.has(p.district)) { districts.push(p.district); set.add(p.district); ch = true; } });
-  if (ch) { sv(K.P, points); sv(K.D, districts); }
-  localStorage.removeItem('pinlog.routes.v1');
+  points.forEach(p => { if (p.district && !districts.some(d => d.name === p.district)) { districts.push({ name: p.district, block: '' }); ch = true; } });
+  districts.forEach(d => { if (d.block && !blocks.some(b => b.name === d.block)) { blocks.push({ name: d.block, color: PALETTE[blocks.length % PALETTE.length] }); ch = true; } });
+  if (ch) { sv(K.P, points); sv(K.D, districts); sv(K.B, blocks); }
+  localStorage.removeItem(K.D1); localStorage.removeItem('pinlog.routes.v1');
 })();
-const savePoints = () => sv(K.P, points), saveDists = () => sv(K.D, districts), saveInsps = () => sv(K.I, insps), savePatrol = () => sv(K.T, patrol);
+const savePoints = () => sv(K.P, points), saveDists = () => sv(K.D, districts), saveBlocks = () => sv(K.B, blocks), saveInsps = () => sv(K.I, insps), savePatrol = () => sv(K.T, patrol);
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -325,15 +360,28 @@ function fmtDate(iso){ const d = new Date(iso); return `${d.getFullYear()}/${d.g
 function fmtDay(iso){ const d = new Date(iso); return `${d.getMonth()+1}/${d.getDate()}`; }
 function fmtTime(iso){ const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 const localDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const ja = (a, b) => a.localeCompare(b, 'ja', { numeric: true });
 const dispName = p => p.name || '(名前なし)';
 const distLabel = d => d || '(地区なし)';
+const blockLabel = b => b || '(ブロックなし)';
 const ll = p => `${p.lat},${p.lng}`;
 const navUrl = p => `google.navigation:q=${ll(p)}`;
 const navWebUrl = p => `https://www.google.com/maps/dir/?api=1&destination=${ll(p)}&travelmode=driving`;
 const mapUrl = p => `https://www.google.com/maps/search/?api=1&query=${ll(p)}`;
 const byId = id => points.find(p => p.id === id);
-const sortedDists = () => districts.slice().sort((a,b) => a.localeCompare(b, 'ja'));
-const tagChip = p => `<span class="tag ${p.tag}">${TAG_SHORT[p.tag]}</span>`;
+// 階層:ブロック > 地区 > 地点
+const dObj = n => districts.find(d => d.name === n);
+const bObj = n => blocks.find(b => b.name === n);
+const blockOfDist = n => (n && dObj(n)?.block) || '';
+const blockOf = p => blockOfDist(p.district);
+const bColor = n => bObj(n)?.color || '#9aa0a6';
+const sortedBlocks = () => blocks.slice().sort((a,b) => ja(a.name, b.name));
+const distsIn = b => districts.filter(d => (d.block || '') === b).sort((a,b) => ja(a.name, b.name));
+const pathText = p => [blockOf(p), p.district, dispName(p)].filter(Boolean).join(' > ');
+const tagChip = p => `<span class="tag ${p.tag}">${TAG_SHORT[p.tag]}${p.tag === 'mp' && KEYS[p.key] ? '・' + KEYS[p.key] : ''}</span>`;
+const blockChip = b => b ? `<span class="tag blk" style="background:${bColor(b)};border-color:${bColor(b)}">${esc(b)}</span>` : '';
+const distChip = d => `<span class="tag">${esc(distLabel(d))}</span>`;
+const placeChips = p => blockChip(blockOf(p)) + distChip(p.district);
 const num = v => { const s = String(v ?? '').trim().replace(/,/g, ''); return s === '' || isNaN(+s) ? null : +s; };
 function lastMap(){ const m = {}; insps.forEach(i => { if (!m[i.pointId] || m[i.pointId].at < i.at) m[i.pointId] = i; }); return m; }
 const lastInsp = pid => lastMap()[pid];
@@ -348,6 +396,7 @@ function inspSummary(i){
 function openLink(url){ const a = document.createElement('a'); a.href = url; if (/^https?:/.test(url)) { a.target = '_blank'; a.rel = 'noopener'; } document.body.appendChild(a); a.click(); a.remove(); }
 const isAndroid = /Android/i.test(navigator.userAgent);
 function armed(btn, label, fn){ // 2回押しで実行(誤操作防止)
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent;
   if (!btn._armed) { btn._armed = true; btn.textContent = 'もう一度押すと' + label; setTimeout(() => { btn._armed = false; btn.textContent = btn.dataset.label; }, 3000); return; }
   btn._armed = false; btn.textContent = btn.dataset.label; fn();
 }
@@ -370,7 +419,7 @@ function refresh(){
 }
 
 // ---------- シート ----------
-function openSheet(id){ closeSheets(); $('toast').classList.remove('on');$('sheetBg').classList.add('on'); $(id).classList.add('on'); }
+function openSheet(id){ closeSheets(); $('toast').classList.remove('on'); $('sheetBg').classList.add('on'); $(id).classList.add('on'); }
 function closeSheets(){ document.querySelectorAll('.sheet,.sheet-bg').forEach(e => e.classList.remove('on')); }
 $('sheetBg').onclick = closeSheets;
 document.querySelectorAll('.sheet .close').forEach(b => b.onclick = closeSheets);
@@ -394,49 +443,77 @@ function startGps(){
 }
 
 // ---------- 地点の記録・編集 ----------
-let editing = null, fTag = 'mp';
-function setTag(t){ fTag = t; $('fTag').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); }
+let editing = null, fTag = 'mp', fKey = '';
+function setSeg(id, attr, v){ $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === v)); }
+function setTag(t){ fTag = t; setSeg('fTag', 't', t); $('fKeyWrap').style.display = t === 'mp' ? '' : 'none'; $('fNameLabel').textContent = t === 'mp' ? 'ポンプ名' : '現場名'; }
+function setKey(k){ fKey = k; setSeg('fKey', 'k', k); }
 $('fTag').querySelectorAll('button').forEach(b => b.onclick = () => setTag(b.dataset.t));
-function fillDistSelect(sel, value){
-  sel.innerHTML = '<option value="">(地区なし)</option>' + sortedDists().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('') + '<option value="__new">+ 新しい地区を追加</option>';
-  sel.value = districts.includes(value) ? value : '';
+$('fKey').querySelectorAll('button').forEach(b => b.onclick = () => setKey(b.dataset.k));
+function fillEditBlocks(v){
+  $('fBlock').innerHTML = '<option value="">(ブロックなし)</option>' + sortedBlocks().map(b => `<option value="${esc(b.name)}">${esc(b.name)}</option>`).join('') + '<option value="__new">+ 新しいブロックを追加</option>';
+  $('fBlock').value = bObj(v) ? v : '';
+  $('fBlockNew').style.display = 'none'; $('fBlockNew').value = '';
 }
+function fillEditDists(block, v){
+  const list = block === '__new' ? [] : distsIn(block);
+  $('fDist').innerHTML = '<option value="">(地区なし)</option>' + list.map(d => `<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('') + '<option value="__new">+ 新しい地区を追加</option>';
+  $('fDist').value = list.some(d => d.name === v) ? v : (block === '__new' ? '__new' : '');
+  $('fDistNew').style.display = $('fDist').value === '__new' ? '' : 'none'; $('fDistNew').value = '';
+}
+$('fBlock').onchange = () => {
+  const n = $('fBlock').value === '__new';
+  $('fBlockNew').style.display = n ? '' : 'none'; if (n) $('fBlockNew').focus();
+  fillEditDists($('fBlock').value, '');
+};
 $('fDist').onchange = () => { const n = $('fDist').value === '__new'; $('fDistNew').style.display = n ? '' : 'none'; if (n) $('fDistNew').focus(); };
 $('recBtn').onclick = () => {
   if (!fix) return;
   if (Date.now() - fix.t > 60000) { toast('位置が古いため更新を待っています'); return; }
+  const lastD = localStorage.getItem(K.LD) || '';
   openEdit({ id: uid(), lat: +fix.lat.toFixed(6), lng: +fix.lng.toFixed(6), accuracy: Math.round(fix.acc),
-             recordedAt: new Date().toISOString(), name: '', note: '', district: localStorage.getItem(K.LD) || '', tag: 'mp' }, true);
+             recordedAt: new Date().toISOString(), name: '', note: '', district: dObj(lastD) ? lastD : '', tag: 'mp', key: '' }, true);
 };
 function openEdit(p, isNew){
   editing = { isNew, data: p };
   $('editTitle').textContent = isNew ? '地点を記録' : '地点を編集';
-  setTag(p.tag || 'mp');
+  setTag(p.tag || 'mp'); setKey(p.key || '');
   $('fName').value = p.name; $('fNote').value = p.note;
-  fillDistSelect($('fDist'), p.district); $('fDistNew').value = ''; $('fDistNew').style.display = 'none';
+  fillEditBlocks(blockOf(p)); fillEditDists(blockOf(p), p.district);
   $('fMeta').textContent = `${p.lat}, ${p.lng} ・ 誤差 ${p.accuracy ?? '-'}m ・ ${fmtDate(p.recordedAt)}`;
   $('fDel').style.display = isNew ? 'none' : '';
   const near = points.filter(q => q.id !== p.id).map(q => ({ q, d: dist(p, q) })).filter(x => x.d <= DUP_M).sort((a,b) => a.d - b.d);
   $('dupWarn').style.display = isNew && near.length ? '' : 'none';
-  if (isNew && near.length) $('dupWarn').textContent = `近くに「${dispName(near[0].q)}」があります(${fmtDist(near[0].d)})。重複していないか確認してください。`;
+  if (isNew && near.length) $('dupWarn').textContent = `近くに「${dispName(near[0].q)}」があります(${fmtDist(near[0].d)})。`;
   openSheet('edit');
 }
 $('fCancel').onclick = closeSheets;
 $('fSave').onclick = () => {
   const p = editing.data;
-  let d = $('fDist').value;
+  // ブロック
+  let b = $('fBlock').value, newB = null;
+  if (b === '__new') {
+    b = $('fBlockNew').value.trim();
+    if (!b) { toast('新しいブロック名を入力してください'); return; }
+    if (!bObj(b)) newB = { name: b, color: PALETTE[blocks.length % PALETTE.length] };
+  }
+  // 地区
+  let d = $('fDist').value, newD = null;
   if (d === '__new') {
     d = $('fDistNew').value.trim();
     if (!d) { toast('新しい地区名を入力してください'); return; }
-    if (!districts.includes(d)) { districts.push(d); saveDists(); }
+    const ex = dObj(d);
+    if (ex && (ex.block || '') !== b) { toast(`「${d}」は「${blockLabel(ex.block)}」にすでにあります`); return; }
+    if (!ex) newD = { name: d, block: b };
   }
-  p.name = $('fName').value.trim(); p.note = $('fNote').value.trim(); p.district = d; p.tag = fTag;
+  if (b && !d) { toast('地区を選ぶか、新しい地区を追加してください'); return; }
+  if (newB) { blocks.push(newB); saveBlocks(); }
+  if (newD) { districts.push(newD); saveDists(); }
+  p.name = $('fName').value.trim(); p.note = $('fNote').value.trim(); p.district = d; p.tag = fTag; p.key = fTag === 'mp' ? fKey : '';
   p.updatedAt = new Date().toISOString();
   if (editing.isNew) { points.unshift(p); localStorage.setItem(K.LD, d); }
   savePoints(); closeSheets(); refresh();
   toast(editing.isNew ? '記録しました' : '更新しました');
 };
-$('fDel').dataset.label = 'この地点を削除';
 $('fDel').onclick = () => armed($('fDel'), '削除します', () => {
   const id = editing.data.id;
   points = points.filter(q => q.id !== id);
@@ -448,11 +525,12 @@ $('fDel').onclick = () => armed($('fDel'), '削除します', () => {
 let actP = null;
 function openAct(p){
   actP = p;
+  $('actPath').textContent = [blockOf(p), distLabel(p.district)].filter(Boolean).join(' > ');
   $('actTitle').textContent = dispName(p);
   const li = lastInsp(p.id);
-  const d = fix ? ' ・ ここから ' + fmtDist(dist(fix, p)) : '';
-  $('actMeta').innerHTML = tagChip(p) + `<span class="tag">${esc(distLabel(p.district))}</span>` + esc(d) +
-    `<div class="note">最終点検:${li ? esc(fmtDate(li.at)) + (inspSummary(li) ? '\n' + esc(inspSummary(li)) : '') : 'なし'}</div>` +
+  const d = fix ? ' ここから ' + fmtDist(dist(fix, p)) : '';
+  $('actMeta').innerHTML = placeChips(p) + tagChip(p) + esc(d) +
+    `<div class="note">最終点検:${li ? esc(fmtDate(li.at)) + (inspSummary(li) ? '\n' + esc(inspSummary(li)) : '') : '記録なし'}</div>` +
     (p.note ? `<div class="note">${esc(p.note)}</div>` : '');
   $('actNav').href = isAndroid ? navUrl(p) : navWebUrl(p);
   $('actMap').href = mapUrl(p);
@@ -466,12 +544,13 @@ $('actEdit').onclick = () => openEdit(actP, false);
 let inspP = null;
 function doInspect(p){
   if (p.tag !== 'mp') { // 施工現場はメモなしで即「済」
-    const rec = addInsp({ pointId: p.id });
-    closeSheets(); refresh(); undoToast(`「${dispName(p)}」を点検済みにしました`, rec.id);
+    addInsp({ pointId: p.id });
+    closeSheets(); refresh(); toast(`「${dispName(p)}」を点検済みにしました`);
     return;
   }
   inspP = p;
   const li = lastInsp(p.id);
+  $('inspPath').textContent = [blockOf(p), distLabel(p.district)].filter(Boolean).join(' > ') + (KEYS[p.key] ? ' ・ ' + KEYS[p.key] : '');
   $('inspTitle').textContent = '点検:' + dispName(p);
   $('inspPrev').textContent = li ? `前回 ${fmtDate(li.at)}\n${inspSummary(li) || '(メモなし)'}` : '前回の記録はありません';
   $('iMp1').value = ''; $('iMp2').value = ''; $('iOther').value = '';
@@ -483,15 +562,14 @@ function showDiff(){
   [['iMp1','dMp1','mp1'],['iMp2','dMp2','mp2']].forEach(([i, d, k]) => {
     const v = num($(i).value), pv = li ? li[k] : null;
     $(d).textContent = v != null && pv != null ? `前回比 ${v - pv >= 0 ? '+' : ''}${+(v - pv).toFixed(1)}h` : (pv != null ? `前回 ${pv}h` : '');
-    $(d).style.color = v != null && pv != null && v < pv ? 'var(--warn)' : '';
   });
 }
 $('iMp1').oninput = showDiff; $('iMp2').oninput = showDiff;
 $('iSave').onclick = () => {
   const r1 = $('iMp1').value.trim(), r2 = $('iMp2').value.trim();
   if ((r1 && num(r1) == null) || (r2 && num(r2) == null)) { toast('運転時間は数字で入力してください'); return; }
-  const rec = addInsp({ pointId: inspP.id, mp1: num(r1), mp2: num(r2), other: $('iOther').value.trim() });
-  closeSheets(); refresh(); undoToast(`「${dispName(inspP)}」の点検を記録しました`, rec.id);
+  addInsp({ pointId: inspP.id, mp1: num(r1), mp2: num(r2), other: $('iOther').value.trim() });
+  closeSheets(); refresh(); toast(`「${dispName(inspP)}」の点検を記録しました`);
 };
 function addInsp(r){
   const rec = { id: uid(), at: new Date().toISOString(), mp1: null, mp2: null, other: '', ...r };
@@ -503,48 +581,85 @@ function removeInsp(id){
   insps = insps.filter(i => i.id !== id); saveInsps();
   if (patrol) for (const k in patrol.done) if (patrol.done[k] === id) { delete patrol.done[k]; savePatrol(); }
 }
-function undoToast(msg){ toast(msg); }
 function openHist(p){
   $('histTitle').textContent = '点検履歴:' + dispName(p);
   const list = insps.filter(i => i.pointId === p.id).sort((a,b) => b.at.localeCompare(a.at));
   $('histList').innerHTML = list.map(i => `<div class="hist"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1">${esc(fmtDate(i.at))}</b>
-    <button class="mini" data-id="${i.id}" data-label="削除">削除</button></div><div class="sub">${esc(inspSummary(i) || '(メモなし)')}</div></div>`).join('') || '<div class="sub">まだ点検記録がありません</div>';
+    <button class="mini" data-id="${i.id}">削除</button></div><div class="sub">${esc(inspSummary(i) || '(メモなし)')}</div></div>`).join('') || '<div class="sub">まだ点検記録がありません</div>';
   $('histList').querySelectorAll('.mini').forEach(b => b.onclick = () => armed(b, '削除', () => { removeInsp(b.dataset.id); openHist(p); refresh(); toast('点検記録を削除しました'); }));
   openSheet('hist');
 }
 
-// ---------- 地区の管理 ----------
-$('distManage').onclick = openDist;
-function openDist(){
-  const cnt = d => points.filter(p => p.district === d).length;
-  $('distRows').innerHTML = sortedDists().map(d => `<div class="drow"><input value="${esc(d)}" data-old="${esc(d)}">
-    <button class="mini go" data-a="save">保存</button><button class="mini" data-a="del" data-label="削除" ${cnt(d) ? 'disabled' : ''}>削除</button><span class="sub" style="min-width:36px">${cnt(d)}件</span></div>`).join('') || '<div class="sub">まだ地区がありません</div>';
-  $('distRows').querySelectorAll('.drow').forEach(row => {
-    const inp = row.querySelector('input'), old = inp.dataset.old;
+// ---------- ブロック・地区の管理 ----------
+$('manage').onclick = () => { renderManage(); openSheet('mng'); };
+function blockOptions(v){ return '<option value="">(ブロックなし)</option>' + sortedBlocks().map(b => `<option value="${esc(b.name)}" ${b.name === v ? 'selected' : ''}>${esc(b.name)}</option>`).join(''); }
+function renderManage(){
+  // ブロック
+  $('mBlocks').innerHTML = sortedBlocks().map(b => {
+    const n = districts.filter(d => d.block === b.name).length;
+    return `<div class="mrow" data-b="${esc(b.name)}"><div class="row"><span class="dot" style="background:${b.color};flex:none;width:16px;height:16px;border-radius:8px"></span>
+      <input value="${esc(b.name)}" style="flex:3"><button class="mini go" data-a="save">保存</button><button class="mini" data-a="del" ${n ? 'disabled' : ''}>削除</button></div>
+      <div class="sw">${PALETTE.map(c => `<button data-c="${c}" style="background:${c}" class="${c === b.color ? 'on' : ''}" aria-label="色"></button>`).join('')}</div>
+      <div class="sub" style="margin-top:4px">地区 ${n}件</div></div>`;
+  }).join('') || '<div class="sub" style="margin-bottom:8px">まだブロックがありません</div>';
+  $('mBlocks').querySelectorAll('.mrow').forEach(row => {
+    const old = row.dataset.b, inp = row.querySelector('input');
+    row.querySelector('[data-a=save]').onclick = () => {
+      const nv = inp.value.trim();
+      if (!nv) { toast('ブロック名を入力してください'); return; }
+      if (nv === old) return;
+      if (bObj(nv)) { toast('同じ名前のブロックがあります'); return; }
+      bObj(old).name = nv; districts.forEach(d => { if (d.block === old) d.block = nv; });
+      saveBlocks(); saveDists(); renderManage(); refresh(); toast('ブロック名を変更しました');
+    };
+    const del = row.querySelector('[data-a=del]');
+    del.onclick = () => armed(del, '削除', () => { blocks = blocks.filter(b => b.name !== old); saveBlocks(); renderManage(); refresh(); toast('ブロックを削除しました'); });
+    row.querySelectorAll('.sw button').forEach(s => s.onclick = () => { bObj(old).color = s.dataset.c; saveBlocks(); renderManage(); refresh(); });
+  });
+  // 地区(ブロックごと)
+  const groups = sortedBlocks().map(b => b.name).concat(['']);
+  $('mDists').innerHTML = groups.map(g => {
+    const ds = distsIn(g); if (!ds.length) return '';
+    return `<div class="sub" style="margin:8px 0 4px">${g ? `<span class="dot" style="background:${bColor(g)}"></span>` : ''}${esc(blockLabel(g))}</div>` + ds.map(d => {
+      const n = points.filter(p => p.district === d.name).length;
+      return `<div class="mrow" data-d="${esc(d.name)}"><div class="row"><input value="${esc(d.name)}" style="flex:3"><button class="mini go" data-a="save">保存</button><button class="mini" data-a="del" ${n ? 'disabled' : ''}>削除</button></div>
+        <div class="row" style="margin-top:6px"><select style="flex:3">${blockOptions(d.block)}</select><span class="sub" style="flex:1;text-align:right">地点 ${n}件</span></div></div>`;
+    }).join('');
+  }).join('') || '<div class="sub" style="margin-bottom:8px">まだ地区がありません</div>';
+  $('mDists').querySelectorAll('.mrow').forEach(row => {
+    const old = row.dataset.d, inp = row.querySelector('input'), sel = row.querySelector('select');
     row.querySelector('[data-a=save]').onclick = () => {
       const nv = inp.value.trim();
       if (!nv) { toast('地区名を入力してください'); return; }
-      if (nv === old) return;
-      if (districts.includes(nv)) { toast('同じ名前の地区があります'); return; }
-      districts = districts.map(d => d === old ? nv : d);
-      points.forEach(p => { if (p.district === old) p.district = nv; });
-      if (patrol) patrol.districts = patrol.districts.map(d => d === old ? nv : d);
-      if (localStorage.getItem(K.LD) === old) localStorage.setItem(K.LD, nv);
-      saveDists(); savePoints(); if (patrol) savePatrol(); openDist(); refresh(); toast('地区名を変更しました');
+      if (nv !== old && dObj(nv)) { toast('同じ名前の地区があります'); return; }
+      const d = dObj(old); d.name = nv; d.block = sel.value;
+      if (nv !== old) {
+        points.forEach(p => { if (p.district === old) p.district = nv; });
+        if (patrol) patrol.districts = patrol.districts.map(x => x === old ? nv : x);
+        if (localStorage.getItem(K.LD) === old) localStorage.setItem(K.LD, nv);
+      }
+      saveDists(); savePoints(); if (patrol) savePatrol(); renderManage(); refresh(); toast('地区を更新しました');
     };
+    sel.onchange = () => { dObj(old).block = sel.value; saveDists(); renderManage(); refresh(); toast('所属ブロックを変更しました'); };
     const del = row.querySelector('[data-a=del]');
-    del.onclick = () => armed(del, '削除', () => { districts = districts.filter(d => d !== old); saveDists(); openDist(); refresh(); toast('地区を削除しました'); });
+    del.onclick = () => armed(del, '削除', () => { districts = districts.filter(d => d.name !== old); saveDists(); renderManage(); refresh(); toast('地区を削除しました'); });
   });
-  if (!$('dist').classList.contains('on')) openSheet('dist');
+  $('mDistNewBlock').innerHTML = blockOptions($('mDistNewBlock').value);
 }
-$('distAdd').onclick = () => {
-  const n = $('distNew').value.trim();
-  if (!n) return;
-  if (districts.includes(n)) { toast('同じ名前の地区があります'); return; }
-  districts.push(n); saveDists(); $('distNew').value = ''; openDist(); refresh(); toast('地区を追加しました');
+$('mBlockAdd').onclick = () => {
+  const n = $('mBlockNew').value.trim(); if (!n) return;
+  if (bObj(n)) { toast('同じ名前のブロックがあります'); return; }
+  blocks.push({ name: n, color: PALETTE[blocks.length % PALETTE.length] }); saveBlocks();
+  $('mBlockNew').value = ''; renderManage(); $('mDistNewBlock').value = n; refresh(); toast('ブロックを追加しました');
+};
+$('mDistAdd').onclick = () => {
+  const n = $('mDistNew').value.trim(); if (!n) return;
+  if (dObj(n)) { toast('同じ名前の地区があります'); return; }
+  districts.push({ name: n, block: $('mDistNewBlock').value }); saveDists();
+  $('mDistNew').value = ''; renderManage(); refresh(); toast('地区を追加しました');
 };
 
-// ---------- 一覧 ----------
+// ---------- 一覧・フィルタ ----------
 let selMode = false, selected = [];
 function itemHtml(p, lm, selectable){
   const d = fix ? `<span class="sub" style="float:right">${fmtDist(dist(fix, p))}</span>` : '';
@@ -552,7 +667,7 @@ function itemHtml(p, lm, selectable){
   const chk = selectable ? `<span class="chk">${on ? selected.indexOf(p.id) + 1 : ''}</span>` : '';
   const li = lm[p.id];
   return `<button class="item ${on ? 'sel' : ''}" data-id="${p.id}">${d}<div class="t ${p.name ? '' : 'unnamed'}">${chk}${esc(dispName(p))}</div>
-    <div class="sub" style="margin-top:4px">${tagChip(p)}<span class="tag">${esc(distLabel(p.district))}</span>${li ? '最終点検 ' + esc(fmtDay(li.at)) : '未点検'}</div></button>`;
+    <div class="sub" style="margin-top:4px">${placeChips(p)}${tagChip(p)}<span style="white-space:nowrap">${li ? '最終点検 ' + esc(fmtDay(li.at)) : '記録なし'}</span></div></button>`;
 }
 function bindItems(root, selectable){
   root.querySelectorAll('.item').forEach(b => b.onclick = () => selectable ? toggleSel(b.dataset.id) : openAct(byId(b.dataset.id)));
@@ -563,27 +678,40 @@ function renderRecent(){
   $('recent').innerHTML = r.length ? r.map(p => itemHtml(p, lm)).join('') : 'まだありません';
   bindItems($('recent'));
 }
-function fillDistFilter(sel, allLabel){
-  const v = sel.value;
-  sel.innerHTML = `<option value="*">${allLabel}</option>` + sortedDists().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('') +
-    (points.some(p => !p.district) ? '<option value="">(地区なし)</option>' : '');
+function fillBlockFilter(){
+  const sel = $('blockFilter'), v = sel.value;
+  sel.innerHTML = '<option value="*">すべてのブロック</option>' + sortedBlocks().map(b => `<option value="${esc(b.name)}">● ${esc(b.name)}</option>`).join('') +
+    (points.some(p => !blockOf(p)) ? '<option value="">(ブロックなし)</option>' : '');
+  sel.value = [...sel.options].some(o => o.value === v) ? v : '*';
+  const c = sel.value && sel.value !== '*' ? bColor(sel.value) : '';
+  sel.style.borderColor = c; sel.style.borderWidth = c ? '2px' : '';
+}
+function fillDistFilter(){
+  const sel = $('distFilter'), v = sel.value, bv = $('blockFilter').value;
+  const ds = (bv === '*' ? districts.slice().sort((a,b) => ja(a.name, b.name)) : distsIn(bv));
+  sel.innerHTML = '<option value="*">すべての地区</option>' + ds.map(d => `<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('') +
+    ((bv === '*' || bv === '') && points.some(p => !p.district) ? '<option value="">(地区なし)</option>' : '');
   sel.value = [...sel.options].some(o => o.value === v) ? v : '*';
 }
-const inDist = v => p => v === '*' || (p.district || '') === v;
+const tagMatch = tf => p => !tf || (tf.includes(':') ? p.tag + ':' + p.key === tf : p.tag === tf);
+const treeKey = p => [blockOf(p) ? '0' + blockOf(p) : '1', p.district ? '0' + p.district : '1', dispName(p)];
+function treeSort(a, b){ const x = treeKey(a), y = treeKey(b); for (let i = 0; i < 3; i++) { const c = ja(x[i], y[i]); if (c) return c; } return 0; }
 function renderList(){
-  fillDistFilter($('distFilter'), 'すべての地区');
-  const q = $('q').value.trim().toLowerCase(), tf = $('tagFilter').value, lm = lastMap();
-  let r = points.filter(inDist($('distFilter').value)).filter(p => !tf || p.tag === tf)
-    .filter(p => !q || (p.name + ' ' + p.note + ' ' + p.district).toLowerCase().includes(q));
+  fillBlockFilter(); fillDistFilter();
+  const q = $('q').value.trim().toLowerCase(), tf = $('tagFilter').value, bv = $('blockFilter').value, dv = $('distFilter').value, lm = lastMap();
+  let r = points.filter(p => (bv === '*' || blockOf(p) === bv) && (dv === '*' || (p.district || '') === dv)).filter(tagMatch(tf))
+    .filter(p => !q || [p.name, p.note, p.district, blockOf(p)].join(' ').toLowerCase().includes(q));
   const s = $('sortSel').value;
   if (s === 'near' && fix) r.sort((a,b) => dist(fix, a) - dist(fix, b));
+  else if (s === 'tree') r.sort(treeSort);
   else if (s === 'old') r.sort((a,b) => (lm[a.id]?.at || '').localeCompare(lm[b.id]?.at || ''));
-  else if (s === 'name') r.sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja'));
+  else if (s === 'name') r.sort((a,b) => ja(dispName(a), dispName(b)));
   else r.sort((a,b) => b.recordedAt.localeCompare(a.recordedAt));
   $('count').textContent = `${r.length}件`;
   $('list').innerHTML = r.map(p => itemHtml(p, lm, selMode)).join('') || '<div class="sub">該当する地点がありません</div>';
   bindItems($('list'), selMode);
 }
+$('blockFilter').addEventListener('input', () => { $('distFilter').value = '*'; renderList(); });
 ['q','distFilter','tagFilter','sortSel'].forEach(id => $(id).addEventListener('input', renderList));
 function setSelMode(on){
   selMode = on; if (!on) selected = [];
@@ -637,24 +765,14 @@ function renderPatrol(){
   const active = !!patrol;
   $('pStart').style.display = active ? 'none' : '';
   $('pActive').style.display = active ? '' : 'none';
-  if (!active) {
-    const lm = lastMap();
-    const ds = sortedDists().concat(points.some(p => !p.district) ? [''] : []);
-    $('pDists').innerHTML = ds.map(d => {
-      const ps = points.filter(p => (p.district || '') === d);
-      const lastDay = ps.map(p => lm[p.id]?.at).filter(Boolean).sort().pop();
-      return `<label class="dchk"><input type="checkbox" value="${esc(d)}" ${ps.length ? '' : 'disabled'}><span style="flex:1;color:var(--fg);font-size:16px">${esc(distLabel(d))}</span>
-        <span class="sub">${ps.length}か所${lastDay ? '・前回 ' + esc(fmtDay(lastDay)) : ''}</span></label>`;
-    }).join('') || '<div class="sub">まだ地点がありません。「記録」から登録してください。</div>';
-    return;
-  }
+  if (!active) { renderPatrolStart(); return; }
   const total = patrol.ids.filter(byId).length, doneN = patrol.ids.filter(id => byId(id) && patrol.done[id]).length;
   $('pTitle').textContent = '巡回中:' + (patrol.districts.map(distLabel).join('、') || '選択した地点');
   $('pBar').style.width = total ? (doneN / total * 100) + '%' : '0';
   $('pProg').textContent = `${doneN} / ${total} か所 点検済み ・ ${fmtDate(patrol.startedAt)} 開始`;
   document.querySelectorAll('#pActive .seg button').forEach(b => b.classList.toggle('on', b.dataset.o === patrol.order));
   $('endSel').innerHTML = '<option value="">なし(最後の地点で終了)</option>' +
-    points.slice().sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja')).map(p => `<option value="${p.id}">${esc(dispName(p))}</option>`).join('');
+    points.slice().sort((a,b) => ja(dispName(a), dispName(b))).map(p => `<option value="${p.id}">${esc(dispName(p))}</option>`).join('');
   $('endSel').value = patrol.endId && byId(patrol.endId) ? patrol.endId : '';
   const rem = remaining();
   const end = patrol.endId && byId(patrol.endId);
@@ -666,14 +784,14 @@ function renderPatrol(){
   $('pRem').innerHTML = rem.map((p, i) => {
     const d = prev ? dist(prev, p) : null; prev = p;
     return `<div class="stop"><span class="num">${i + 1}</span><div class="nm"><div class="t">${esc(dispName(p))}</div>
-      <div class="sub">${tagChip(p)}${d != null ? (i ? '前から' : '現在地から') + ' ' + fmtDist(d) : ''}</div></div>
+      <div class="sub">${blockChip(blockOf(p))}${tagChip(p)}${d != null ? (i ? '前から' : '現在地から') + ' ' + fmtDist(d) : ''}</div></div>
       <button class="mini go" data-a="nav" data-id="${p.id}">▶</button><button class="mini ok" data-a="insp" data-id="${p.id}">点検</button></div>`;
   }).join('') || '<div class="sub">未点検の地点はありません</div>';
   const doneList = patrol.ids.map(byId).filter(p => p && patrol.done[p.id]).map(p => ({ p, i: insps.find(x => x.id === patrol.done[p.id]) })).sort((a,b) => (b.i?.at || '').localeCompare(a.i?.at || ''));
   $('doneTitle').textContent = `点検済み(${doneList.length})`;
   $('pDone').innerHTML = doneList.map(({p, i}) => `<div class="stop"><span class="num done">✓</span><div class="nm"><div class="t">${esc(dispName(p))}</div>
       <div class="sub">${i ? esc(fmtDay(i.at) + ' ' + fmtTime(i.at)) : ''} ${esc(inspSummary(i))}</div></div>
-      <button class="mini" data-a="undo" data-id="${p.id}" data-label="取消">取消</button></div>`).join('') || '<div class="sub">まだありません</div>';
+      <button class="mini" data-a="undo" data-id="${p.id}">取消</button></div>`).join('') || '<div class="sub">まだありません</div>';
   document.querySelectorAll('#pRem .mini, #pDone .mini').forEach(b => b.onclick = () => {
     const p = byId(b.dataset.id);
     if (b.dataset.a === 'nav') openLink(isAndroid ? navUrl(p) : navWebUrl(p));
@@ -681,8 +799,28 @@ function renderPatrol(){
     if (b.dataset.a === 'undo') armed(b, '取消', () => { removeInsp(patrol.done[p.id]); refresh(); toast('点検済みを取り消しました'); });
   });
 }
+function renderPatrolStart(){
+  const lm = lastMap();
+  const info = d => {
+    const ps = points.filter(p => (p.district || '') === d);
+    const last = ps.map(p => lm[p.id]?.at).filter(Boolean).sort().pop();
+    return { n: ps.length, txt: `${ps.length}か所${last ? '・前回 ' + fmtDay(last) : ''}` };
+  };
+  const groups = sortedBlocks().map(b => ({ b: b.name, ds: distsIn(b.name).map(d => d.name) }));
+  const loose = distsIn('').map(d => d.name).concat(points.some(p => !p.district) ? [''] : []);
+  if (loose.length) groups.push({ b: '', ds: loose });
+  $('pDists').innerHTML = groups.filter(g => g.ds.length).map(g => {
+    const cnt = g.ds.reduce((s, d) => s + info(d).n, 0);
+    return `<label class="dchk"><input type="checkbox" data-block="${esc(g.b)}" ${cnt ? '' : 'disabled'}>${g.b ? `<span class="dot" style="background:${bColor(g.b)}"></span>` : ''}
+      <b style="flex:1;font-size:16px">${esc(blockLabel(g.b))}</b><span class="sub">${cnt}か所</span></label>` +
+      g.ds.map(d => { const f = info(d); return `<label class="dchk child"><input type="checkbox" value="${esc(d)}" data-in="${esc(g.b)}" ${f.n ? '' : 'disabled'}>
+        <span style="flex:1;font-size:16px">${esc(distLabel(d))}</span><span class="sub">${esc(f.txt)}</span></label>`; }).join('');
+  }).join('') || '<div class="sub">まだ地点がありません。「記録」から登録してください。</div>';
+  $('pDists').querySelectorAll('input[data-block]').forEach(cb => cb.onchange = () =>
+    $('pDists').querySelectorAll('input[data-in]').forEach(x => { if (x.dataset.in === cb.dataset.block && !x.disabled) x.checked = cb.checked; }));
+}
 $('pBegin').onclick = () => {
-  const ds = [...$('pDists').querySelectorAll('input:checked')].map(i => i.value);
+  const ds = [...$('pDists').querySelectorAll('input[data-in]:checked')].map(i => i.value);
   if (!ds.length) { toast('地区を選んでください'); return; }
   startPatrol(points.filter(p => ds.includes(p.district || '')).map(p => p.id), ds);
   renderPatrol();
@@ -704,49 +842,70 @@ $('pNav').onclick = () => {
   openLink(url);
 };
 $('pAdd').onclick = () => { show('list'); setSelMode(true); toast('追加する地点を選んでください'); };
-$('pEnd').dataset.label = '巡回を終了';
 $('pEnd').onclick = () => armed($('pEnd'), '終了します', () => { patrol = null; localStorage.removeItem(K.T); renderPatrol(); toast('巡回を終了しました(点検記録は残ります)'); });
 
 // ---------- 出力 ----------
+function fillTarget(sel){
+  const v = sel.value;
+  sel.innerHTML = '<option value="*">すべて</option>' +
+    (blocks.length ? '<optgroup label="ブロック">' + sortedBlocks().map(b => `<option value="b:${esc(b.name)}">${esc(b.name)}</option>`).join('') + '</optgroup>' : '') +
+    (districts.length ? '<optgroup label="地区">' + districts.slice().sort((a,b) => ja((a.block || '~') + a.name, (b.block || '~') + b.name))
+      .map(d => `<option value="d:${esc(d.name)}">${esc((d.block ? d.block + ' > ' : '') + d.name)}</option>`).join('') + '</optgroup>' : '');
+  sel.value = [...sel.options].some(o => o.value === v) ? v : '*';
+}
+const matchTarget = v => p => v === '*' || (v.startsWith('b:') ? blockOf(p) === v.slice(2) : (p.district || '') === v.slice(2));
+const targetTitle = v => v === '*' ? '全件' : v.slice(2);
 function renderExport(){
-  fillDistFilter($('expDist'), 'すべて'); fillDistFilter($('ixDist'), 'すべて');
+  fillTarget($('expT')); fillTarget($('ixT'));
   const unnamed = points.filter(p => !p.name).length;
-  $('stat').textContent = `地点 ${points.length}件` + (unnamed ? `(うち名前なし ${unnamed}件)` : '') + `・地区 ${districts.length}・点検記録 ${insps.length}件`;
+  $('stat').textContent = `地点 ${points.length}件` + (unnamed ? `(うち名前なし ${unnamed}件)` : '') + `・ブロック ${blocks.length}・地区 ${districts.length}・点検記録 ${insps.length}件`;
 }
 const xml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+const kmlColor = hex => { const h = hex.replace('#', ''); return 'ff' + h.slice(4, 6) + h.slice(2, 4) + h.slice(0, 2); }; // KMLは aabbggrr
 function descText(p, li){
-  return [`種類: ${TAGS[p.tag]}`, p.note, li ? `最終点検: ${fmtDate(li.at)}${inspSummary(li) ? ' ' + inspSummary(li) : ''}` : '', `ナビ: ${navWebUrl(p)}`].filter(Boolean).join('\n');
+  return [pathText(p), `種類: ${TAGS[p.tag]}${p.tag === 'mp' && KEYS[p.key] ? '(' + KEYS[p.key] + ')' : ''}`, p.note,
+    li ? `最終点検: ${fmtDate(li.at)}${inspSummary(li) ? ' ' + inspSummary(li) : ''}` : '', `ナビ: ${navWebUrl(p)}`].filter(Boolean).join('\n');
 }
 function toKML(list, title){
-  const lm = lastMap(), groups = {};
-  list.forEach(p => (groups[distLabel(p.district)] ||= []).push(p));
-  const pm = p => `      <Placemark>
-        <name>${xml(dispName(p))}</name>
-        <description>${xml(descText(p, lm[p.id]))}</description>
-        <ExtendedData>
-          <Data name="地区"><value>${xml(p.district)}</value></Data>
-          <Data name="種類"><value>${xml(TAGS[p.tag])}</value></Data>
-          <Data name="備考"><value>${xml(p.note)}</value></Data>
-          <Data name="最終点検"><value>${xml(lm[p.id] ? fmtDate(lm[p.id].at) : '')}</value></Data>
-          <Data name="ナビ"><value>${xml(navWebUrl(p))}</value></Data>
-        </ExtendedData>
-        <Point><coordinates>${p.lng},${p.lat},0</coordinates></Point>
-      </Placemark>`;
-  const folders = Object.keys(groups).sort((a,b) => a.localeCompare(b, 'ja')).map(g =>
-    `    <Folder>\n      <name>${xml(g)}</name>\n${groups[g].map(pm).join('\n')}\n    </Folder>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n  <Document>\n    <name>${xml(title)}</name>\n${folders}\n  </Document>\n</kml>\n`;
+  const lm = lastMap();
+  const bNames = [...new Set(list.map(blockOf))].sort((a,b) => a ? (b ? ja(a, b) : -1) : 1);
+  const styleId = b => 'b' + Math.max(0, sortedBlocks().findIndex(x => x.name === b));
+  const styles = sortedBlocks().map((b, i) => `    <Style id="b${i}"><IconStyle><color>${kmlColor(b.color)}</color></IconStyle></Style>`).join('\n') +
+    `\n    <Style id="none"><IconStyle><color>${kmlColor('#9aa0a6')}</color></IconStyle></Style>`;
+  const pm = p => `        <Placemark>
+          <name>${xml(dispName(p))}</name>
+          <styleUrl>#${blockOf(p) ? styleId(blockOf(p)) : 'none'}</styleUrl>
+          <description>${xml(descText(p, lm[p.id]))}</description>
+          <ExtendedData>
+            <Data name="ブロック"><value>${xml(blockOf(p))}</value></Data>
+            <Data name="地区"><value>${xml(p.district)}</value></Data>
+            <Data name="種類"><value>${xml(TAGS[p.tag])}</value></Data>
+            <Data name="カギ種別"><value>${xml(p.tag === 'mp' ? KEYS[p.key] || '' : '')}</value></Data>
+            <Data name="備考"><value>${xml(p.note)}</value></Data>
+            <Data name="最終点検"><value>${xml(lm[p.id] ? fmtDate(lm[p.id].at) : '')}</value></Data>
+            <Data name="ナビ"><value>${xml(navWebUrl(p))}</value></Data>
+          </ExtendedData>
+          <Point><coordinates>${p.lng},${p.lat},0</coordinates></Point>
+        </Placemark>`;
+  const body = bNames.map(b => {
+    const inB = list.filter(p => blockOf(p) === b);
+    const dNames = [...new Set(inB.map(p => p.district || ''))].sort((x, y) => x ? (y ? ja(x, y) : -1) : 1);
+    return `    <Folder>\n      <name>${xml(blockLabel(b))}</name>\n` + dNames.map(d =>
+      `      <Folder>\n        <name>${xml(distLabel(d))}</name>\n${inB.filter(p => (p.district || '') === d).sort((x, y) => ja(dispName(x), dispName(y))).map(pm).join('\n')}\n      </Folder>`).join('\n') + '\n    </Folder>';
+  }).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n  <Document>\n    <name>${xml(title)}</name>\n${styles}\n${body}\n  </Document>\n</kml>\n`;
 }
 const csvCell = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 const toCSVText = (head, rows) => '﻿' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 function toCSV(list){
   const lm = lastMap();
-  return toCSVText(['name','latitude','longitude','district','type','note','last_inspected','recorded_at','navi_url'],
-    list.map(p => [dispName(p), p.lat, p.lng, p.district, TAGS[p.tag], p.note, lm[p.id] ? fmtDate(lm[p.id].at) : '', p.recordedAt, navWebUrl(p)]));
+  return toCSVText(['name','latitude','longitude','block','district','type','key','note','last_inspected','recorded_at','navi_url'],
+    list.slice().sort(treeSort).map(p => [dispName(p), p.lat, p.lng, blockOf(p), p.district, TAGS[p.tag], p.tag === 'mp' ? KEYS[p.key] || '' : '', p.note, lm[p.id] ? fmtDate(lm[p.id].at) : '', p.recordedAt, navWebUrl(p)]));
 }
 function toGPX(list, title){
   const lm = lastMap();
-  const wpt = p => `  <wpt lat="${p.lat}" lon="${p.lng}">\n    <time>${xml(p.recordedAt)}</time>\n    <name>${xml(dispName(p))}</name>\n    <desc>${xml(descText(p, lm[p.id]))}</desc>\n    <type>${xml(distLabel(p.district))}</type>\n  </wpt>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="PinLog" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${xml(title)}</name></metadata>\n${list.map(wpt).join('\n')}\n</gpx>\n`;
+  const wpt = p => `  <wpt lat="${p.lat}" lon="${p.lng}">\n    <time>${xml(p.recordedAt)}</time>\n    <name>${xml(dispName(p))}</name>\n    <desc>${xml(descText(p, lm[p.id]))}</desc>\n    <type>${xml([blockOf(p), p.district].filter(Boolean).join(' > '))}</type>\n  </wpt>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="PinLog" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${xml(title)}</name></metadata>\n${list.slice().sort(treeSort).map(wpt).join('\n')}\n</gpx>\n`;
 }
 async function deliver(text, filename, mime){
   const file = new File([text], filename, { type: mime });
@@ -762,27 +921,26 @@ async function deliver(text, filename, mime){
 }
 const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`; };
 const safe = s => s.replace(/[\\/:*?"<>|\s]+/g, '_');
-const distTitle = v => v === '*' ? '全地区' : distLabel(v);
 $('expShare').onclick = () => {
-  const v = $('expDist').value, list = points.filter(inDist(v));
+  const v = $('expT').value, list = points.filter(matchTarget(v));
   if (!list.length) { toast('対象の地点がありません'); return; }
-  const title = `ピンログ_${distTitle(v)}`, base = safe(`${title}_${stamp()}`), f = $('expFmt').value;
+  const title = `ピンログ_${targetTitle(v)}`, base = safe(`${title}_${stamp()}`), f = $('expFmt').value;
   if (f === 'kml') deliver(toKML(list, title), base + '.kml', 'application/vnd.google-earth.kml+xml');
   if (f === 'csv') deliver(toCSV(list), base + '.csv', 'text/csv');
   if (f === 'gpx') deliver(toGPX(list, title), base + '.gpx', 'application/gpx+xml');
 };
 $('ixShare').onclick = () => {
-  const v = $('ixDist').value, from = $('ixFrom').value, to = $('ixTo').value;
-  const rows = insps.filter(i => { const p = byId(i.pointId); if (!p || !inDist(v)(p)) return false; const d = localDay(i.at); return (!from || d >= from) && (!to || d <= to); })
+  const v = $('ixT').value, from = $('ixFrom').value, to = $('ixTo').value;
+  const rows = insps.filter(i => { const p = byId(i.pointId); if (!p || !matchTarget(v)(p)) return false; const d = localDay(i.at); return (!from || d >= from) && (!to || d <= to); })
     .sort((a,b) => a.at.localeCompare(b.at))
-    .map(i => { const p = byId(i.pointId); return [fmtDate(i.at), p.district, dispName(p), TAGS[p.tag], i.mp1 ?? '', i.mp2 ?? '', i.other, p.lat, p.lng]; });
+    .map(i => { const p = byId(i.pointId); return [fmtDate(i.at), blockOf(p), p.district, dispName(p), TAGS[p.tag], p.tag === 'mp' ? KEYS[p.key] || '' : '', i.mp1 ?? '', i.mp2 ?? '', i.other, p.lat, p.lng]; });
   if (!rows.length) { toast('対象の点検記録がありません'); return; }
-  const name = safe(`点検記録_${distTitle(v)}_${from || '最初'}〜${to || stamp()}`) + '.csv';
-  deliver(toCSVText(['点検日時','地区','地点名','種類','MP1運転時間(h)','MP2運転時間(h)','その他','緯度','経度'], rows), name, 'text/csv');
+  const name = safe(`点検記録_${targetTitle(v)}_${from || '最初'}〜${to || stamp()}`) + '.csv';
+  deliver(toCSVText(['点検日時','ブロック','地区','地点名','種類','カギ種別','MP1運転時間(h)','MP2運転時間(h)','その他','緯度','経度'], rows), name, 'text/csv');
 };
 
 // ---------- バックアップ ----------
-$('bkOut').onclick = () => deliver(JSON.stringify({ app: 'pinlog', version: 2, exportedAt: new Date().toISOString(), points, districts, inspections: insps, patrol }, null, 1),
+$('bkOut').onclick = () => deliver(JSON.stringify({ app: 'pinlog', version: 3, exportedAt: new Date().toISOString(), points, blocks, districts, inspections: insps, patrol }, null, 1),
   `pinlog_backup_${stamp()}.json`, 'application/json');
 $('bkIn').onclick = () => $('bkFile').click();
 $('bkFile').onchange = async e => {
@@ -791,19 +949,24 @@ $('bkFile').onchange = async e => {
     const data = JSON.parse(await f.text());
     const arr = Array.isArray(data) ? data : data.points;
     if (!Array.isArray(arr)) throw new Error('形式が違います');
+    (data.blocks || []).forEach(b => { if (b && b.name && !bObj(b.name)) blocks.push({ name: b.name, color: b.color || PALETTE[blocks.length % PALETTE.length] }); });
+    (data.districts || []).forEach(d => {
+      const o = typeof d === 'string' ? { name: d, block: '' } : d;
+      if (o && o.name && !dObj(o.name)) districts.push({ name: o.name, block: o.block || '' });
+    });
+    districts.forEach(d => { if (d.block && !bObj(d.block)) blocks.push({ name: d.block, color: PALETTE[blocks.length % PALETTE.length] }); });
     const ids = new Set(points.map(p => p.id)); let ap = 0, ai = 0;
     arr.forEach(p => {
       if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number' || ids.has(p.id)) return;
-      const q = { name: '', note: '', tag: 'mp', ...p, id: p.id || uid() };
+      const q = { name: '', note: '', tag: 'mp', key: '', ...p, id: p.id || uid() };
       if (q.district === undefined) { q.district = q.category || ''; delete q.category; }
       if (!TAGS[q.tag]) q.tag = 'mp';
       points.push(q); ap++;
-      if (q.district && !districts.includes(q.district)) districts.push(q.district);
+      if (q.district && !dObj(q.district)) districts.push({ name: q.district, block: '' });
     });
-    (data.districts || []).forEach(d => { if (d && !districts.includes(d)) districts.push(d); });
     const iids = new Set(insps.map(i => i.id));
     (data.inspections || []).forEach(i => { if (i && i.id && i.pointId && !iids.has(i.id)) { insps.push(i); ai++; } });
-    savePoints(); saveDists(); saveInsps(); refresh();
+    savePoints(); saveDists(); saveBlocks(); saveInsps(); refresh();
     toast(`地点${ap}件・点検記録${ai}件を追加しました(重複は除外)`);
   } catch (err) { toast('読み込めませんでした:' + err.message); }
   e.target.value = '';
