@@ -1,5 +1,5 @@
 // オフラインでも起動できるよう、アプリ本体をキャッシュする
-const CACHE = 'pinlog-v7';
+const CACHE = 'pinlog-v8';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

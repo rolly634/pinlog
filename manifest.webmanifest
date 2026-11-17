@@ -1,16 +1,26 @@
 {
-  "name": "ピンログ",
-  "short_name": "ピンログ",
-  "description": "訪れた場所を記録してGoogleマップ用に出力",
+  "name": "MP記録",
+  "short_name": "MP記録",
+  "description": "マンホールポンプ・施工現場の位置と点検を記録してGoogleマップで巡回",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f6f7f9",
-  "theme_color": "#1a73e8",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "ja",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

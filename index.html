@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1a73e8">
-<title>ピンログ</title>
+<meta name="theme-color" content="#ffffff">
+<title>MP記録</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <style>
@@ -82,7 +82,7 @@ h3{font-size:16px;margin:0 0 8px}
 </style>
 </head>
 <body>
-<header>ピンログ</header>
+<header style="display:flex;align-items:center;gap:10px"><img src="icon-192.png" alt="" width="28" height="28" style="border-radius:7px;border:1px solid var(--line)">MP記録</header>
 <main>
   <!-- 記録 -->
   <section id="v-rec" class="view on">
@@ -986,7 +986,7 @@ const safe = s => s.replace(/[\\/:*?"<>|\s]+/g, '_');
 $('expShare').onclick = () => {
   const v = $('expT').value, list = points.filter(matchTarget(v));
   if (!list.length) { toast('対象の地点がありません'); return; }
-  const title = `ピンログ_${targetTitle(v)}`, base = safe(`${title}_${stamp()}`), f = $('expFmt').value;
+  const title = `MP記録_${targetTitle(v)}`, base = safe(`${title}_${stamp()}`), f = $('expFmt').value;
   if (f === 'kml') deliver(toKML(list, title), base + '.kml', 'application/vnd.google-earth.kml+xml');
   if (f === 'csv') deliver(toCSV(list), base + '.csv', 'text/csv');
   if (f === 'gpx') deliver(toGPX(list, title), base + '.gpx', 'application/gpx+xml');
