@@ -8,56 +8,74 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--fg:#1d1f23;--sub:#5f6672;--line:#e1e4e8;--pri:#1a73e8;--pri-fg:#fff;--warn:#b3261e;--ok:#188038}
-@media (prefers-color-scheme:dark){:root{--bg:#121316;--card:#1d1f24;--fg:#e8eaed;--sub:#9aa0a6;--line:#33363c;--pri:#8ab4f8;--pri-fg:#0b1a33;--warn:#f28b82;--ok:#81c995}}
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1d1f23;--sub:#5f6672;--line:#e1e4e8;--pri:#1a73e8;--pri-fg:#fff;--warn:#b3261e;--ok:#188038;--mp:#0b57d0;--site:#b06000}
+@media (prefers-color-scheme:dark){:root{--bg:#121316;--card:#1d1f24;--fg:#e8eaed;--sub:#9aa0a6;--line:#33363c;--pri:#8ab4f8;--pri-fg:#0b1a33;--warn:#f28b82;--ok:#81c995;--mp:#a8c7fa;--site:#fdd663}}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px}
 header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;font-weight:700;font-size:18px}
 main{padding:16px 16px 96px;max-width:640px;margin:0 auto}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
 nav button{flex:1;border:0;background:none;color:var(--sub);padding:12px 0;font-size:14px}
 nav button.on{color:var(--pri);font-weight:700}
 .view{display:none}.view.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
-.big{display:block;width:100%;min-height:160px;border:0;border-radius:20px;background:var(--pri);color:var(--pri-fg);font-size:26px;font-weight:700}
+.big{display:block;width:100%;min-height:150px;border:0;border-radius:20px;background:var(--pri);color:var(--pri-fg);font-size:26px;font-weight:700}
 .big:disabled{opacity:.5}
-.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:12px 14px;font-size:16px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:12px 14px;font-size:16px;text-align:center;text-decoration:none;display:inline-block}
 .btn.pri{background:var(--pri);color:var(--pri-fg);border-color:var(--pri)}
 .btn.warn{color:var(--warn)}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.row>*{flex:1}
+.btn:disabled{opacity:.45}
+.wide{display:block;width:100%}
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
 .sub{color:var(--sub);font-size:14px}
 .acc-good{color:var(--ok)}.acc-bad{color:var(--warn)}
 label{display:block;font-size:14px;color:var(--sub);margin:12px 0 4px}
 input,textarea,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font-size:16px;font-family:inherit}
-textarea{min-height:80px}
-.item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--fg)}
+textarea{min-height:72px}
+.item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--fg);font-size:16px}
 .item .t{font-weight:700}
-.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin-right:6px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin-right:6px;white-space:nowrap}
+.tag.mp{color:var(--mp);border-color:var(--mp)}
+.tag.site{color:var(--site);border-color:var(--site)}
 .unnamed{color:var(--warn)}
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:10}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--card);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));z-index:11;display:none;max-width:640px;margin:0 auto}
 .sheet.on,.sheet-bg.on{display:block}
 .sheet h2{margin:0 0 8px;font-size:18px}
-.note{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;display:none;z-index:20;max-width:90%}
+.note{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px;white-space:pre-wrap}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;display:none;z-index:20;max-width:90%}
 .toast.on{display:block}
 h3{font-size:16px;margin:0 0 8px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--card);color:var(--fg);padding:12px 6px;font-size:15px}
+.seg button.on{background:var(--pri);color:var(--pri-fg);font-weight:700}
 .item.sel{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri) inset}
-.chk{display:inline-block;width:22px;height:22px;border:2px solid var(--line);border-radius:6px;vertical-align:-5px;margin-right:8px;text-align:center;line-height:18px;font-size:14px}
+.chk{display:inline-block;width:22px;height:22px;border:2px solid var(--line);border-radius:6px;vertical-align:-5px;margin-right:8px;text-align:center;line-height:18px;font-size:13px}
 .item.sel .chk{background:var(--pri);border-color:var(--pri);color:var(--pri-fg)}
-.selbar{position:fixed;left:0;right:0;bottom:calc(49px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:none;gap:8px;align-items:center;z-index:4}
+.selbar{position:fixed;left:0;right:0;bottom:calc(49px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:none;gap:8px;align-items:center;z-index:5}
 .selbar.on{display:flex}
 .stop{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;background:var(--card)}
 .stop .num{min-width:26px;height:26px;border-radius:13px;background:var(--pri);color:var(--pri-fg);text-align:center;line-height:26px;font-weight:700;font-size:14px}
+.stop .num.done{background:var(--ok)}
 .stop .nm{flex:1;min-width:0}
-.stop .nm div:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mini{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;min-width:36px;height:36px;font-size:15px;padding:0 6px}
+.stop .nm .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.mini{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;min-width:44px;height:40px;font-size:15px;padding:0 8px}
 .mini.go{color:var(--pri);font-weight:700}
+.mini.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+.dchk{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.dchk input{width:22px;height:22px;flex:none}
+.dchk:last-child{border-bottom:0}
+.prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:8px 0}
+.prog div{height:100%;background:var(--ok)}
+.drow{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.drow input{flex:1}
+.hist{border-bottom:1px solid var(--line);padding:10px 0}
+.hist:last-child{border-bottom:0}
 </style>
 </head>
 <body>
-<header id="title">ピンログ</header>
+<header>ピンログ</header>
 <main>
   <!-- 記録 -->
   <section id="v-rec" class="view on">
@@ -74,71 +92,92 @@ h3{font-size:16px;margin:0 0 8px}
 
   <!-- 一覧 -->
   <section id="v-list" class="view">
-    <div class="row" style="flex-wrap:nowrap">
+    <div class="row">
       <input id="q" type="search" placeholder="名前・備考で検索" style="flex:3">
       <button id="selToggle" class="btn" style="flex:1">選択</button>
     </div>
     <div class="row" style="margin-top:8px">
-      <select id="catFilter"></select>
-      <select id="sortSel">
-        <option value="new">新しい順</option>
-        <option value="near">近い順</option>
-        <option value="name">名前順</option>
+      <select id="distFilter"></select>
+      <select id="tagFilter">
+        <option value="">すべての種類</option>
+        <option value="mp">マンホールポンプ</option>
+        <option value="site">施工現場</option>
       </select>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="sortSel">
+        <option value="near">近い順</option>
+        <option value="old">点検が古い順</option>
+        <option value="name">名前順</option>
+        <option value="new">登録が新しい順</option>
+      </select>
+      <button id="distManage" class="btn">地区の管理</button>
     </div>
     <div id="count" class="sub" style="margin:12px 0 8px"></div>
     <div id="list"></div>
   </section>
 
-  <!-- ルート -->
-  <section id="v-route" class="view">
-    <div class="card">
-      <h3 id="draftTitle">ルート</h3>
-      <div id="draftEmpty" class="sub">「一覧」→「選択」で地点を選んで「ルートを作る」を押すか、下の保存済みルートを開いてください。</div>
-      <div id="draftBody" style="display:none">
-        <div class="row">
-          <button class="btn" id="oFar">遠い順</button>
-          <button class="btn" id="oNear">近い順</button>
-          <button class="btn" id="oRev">逆順</button>
-        </div>
-        <div class="sub" style="margin:8px 0">遠い順:いちばん遠い地点から、帰り道で近い地点をたどる順番</div>
-        <div id="stops"></div>
-        <label for="endSel">最後に戻る地点(任意)</label>
-        <select id="endSel"></select>
-        <div id="routeInfo" class="sub" style="margin-top:8px"></div>
-        <button id="routeNav" class="btn pri" style="width:100%;margin-top:12px">1番目からナビ開始</button>
-        <div class="sub" style="margin-top:6px">途中から再開するときは、各地点の「▶」を押すと、そこから先だけでナビします。</div>
-        <label for="rName">ルート名</label>
-        <input id="rName" placeholder="例:月曜の現場まわり">
-        <div class="row" style="margin-top:8px">
-          <button id="rSave" class="btn">保存</button>
-          <button id="rClose" class="btn">閉じる</button>
-        </div>
-        <button id="rDel" class="btn warn" style="width:100%;margin-top:8px;display:none">このルートを削除</button>
+  <!-- 巡回 -->
+  <section id="v-patrol" class="view">
+    <div id="pStart">
+      <div class="card">
+        <h3>巡回する地区を選ぶ</h3>
+        <div id="pDists"></div>
+        <button id="pBegin" class="btn pri wide" style="margin-top:12px">巡回を開始</button>
+        <div class="sub" style="margin-top:8px">一覧の「選択」から、地点を個別に選んで始めることもできます。</div>
       </div>
     </div>
-    <div class="card">
-      <h3>保存したルート</h3>
-      <div id="routes" class="sub"></div>
+    <div id="pActive" style="display:none">
+      <div class="card">
+        <h3 id="pTitle"></h3>
+        <div class="prog"><div id="pBar"></div></div>
+        <div id="pProg" class="sub"></div>
+        <div class="seg" style="margin-top:12px">
+          <button data-o="far">遠い順</button>
+          <button data-o="near">近い順</button>
+        </div>
+        <div class="sub" style="margin-top:6px">現在地から毎回並べ直します。遠い順は、いちばん遠い地点から帰り道で近い地点をたどる順番です。</div>
+        <label for="endSel">最後に戻る地点(任意)</label>
+        <select id="endSel"></select>
+        <button id="pNav" class="btn pri wide" style="margin-top:12px"></button>
+        <button id="pResort" class="btn wide" style="margin-top:8px">現在地で並べ直す</button>
+      </div>
+      <h3 id="remTitle" style="margin:16px 0 8px">未点検</h3>
+      <div id="pRem"></div>
+      <h3 id="doneTitle" style="margin:16px 0 8px">点検済み</h3>
+      <div id="pDone"></div>
+      <div class="row" style="margin-top:16px">
+        <button id="pAdd" class="btn">地点を追加</button>
+        <button id="pEnd" class="btn warn">巡回を終了</button>
+      </div>
     </div>
   </section>
 
   <!-- 出力 -->
   <section id="v-exp" class="view">
     <div class="card">
-      <h3>地図用ファイルを出力</h3>
-      <label for="expCat">対象</label>
-      <select id="expCat"></select>
+      <h3>地図用ファイル</h3>
+      <label for="expDist">対象地区</label>
+      <select id="expDist"></select>
       <label for="expFmt">形式</label>
       <select id="expFmt">
         <option value="kml">KML(Googleマイマップ推奨)</option>
         <option value="csv">CSV</option>
         <option value="gpx">GPX</option>
       </select>
-      <div class="row" style="margin-top:16px">
-        <button id="expShare" class="btn pri">共有・保存</button>
+      <button id="expShare" class="btn pri wide" style="margin-top:16px">共有・保存</button>
+      <div class="note">KMLは地区ごとにレイヤが分かれます。マイマップに取り込むときは、古いレイヤを削除してから読み込んでください。</div>
+    </div>
+    <div class="card">
+      <h3>点検記録(CSV)</h3>
+      <label for="ixDist">対象地区</label>
+      <select id="ixDist"></select>
+      <div class="row">
+        <div><label for="ixFrom">開始日</label><input id="ixFrom" type="date"></div>
+        <div><label for="ixTo">終了日</label><input id="ixTo" type="date"></div>
       </div>
-      <div class="note">マイマップに取り込むときは、同じカテゴリの古いレイヤを削除してから新しいファイルを読み込んでください。</div>
+      <button id="ixShare" class="btn pri wide" style="margin-top:16px">点検記録を出力</button>
+      <div class="sub" style="margin-top:8px">日付を空にすると全期間を出力します。</div>
     </div>
     <div class="card">
       <h3>バックアップ</h3>
@@ -156,404 +195,558 @@ h3{font-size:16px;margin:0 0 8px}
 <nav>
   <button data-v="rec" class="on">記録</button>
   <button data-v="list">一覧</button>
-  <button data-v="route">ルート</button>
+  <button data-v="patrol">巡回</button>
   <button data-v="exp">出力</button>
 </nav>
 <div id="selBar" class="selbar">
   <span id="selCount" style="flex:1">0件選択</span>
   <button id="selClear" class="btn">解除</button>
-  <button id="selRoute" class="btn pri">ルートを作る</button>
+  <button id="selGo" class="btn pri">巡回に入れる</button>
 </div>
 
-<!-- 編集シート -->
 <div id="sheetBg" class="sheet-bg"></div>
+
+<!-- 地点の登録・編集 -->
 <div id="edit" class="sheet">
   <h2 id="editTitle">地点を記録</h2>
   <div id="dupWarn" class="note" style="display:none"></div>
-  <label for="fName">名前</label>
+  <label>種類</label>
+  <div class="seg" id="fTag">
+    <button data-t="mp">マンホールポンプ</button>
+    <button data-t="site">施工現場</button>
+  </div>
+  <label for="fName">地点名</label>
   <input id="fName" placeholder="未入力なら後で付けられます">
-  <label for="fCat">カテゴリ</label>
-  <input id="fCat" list="catList" placeholder="例:駐車場、食事、仕事">
-  <datalist id="catList"></datalist>
-  <label for="fNote">備考</label>
+  <label for="fDist">地区</label>
+  <select id="fDist"></select>
+  <input id="fDistNew" placeholder="新しい地区名" style="display:none;margin-top:8px">
+  <label for="fNote">備考(地点の情報)</label>
   <textarea id="fNote" placeholder="入口は裏側、など"></textarea>
   <div id="fMeta" class="sub" style="margin-top:8px"></div>
   <div class="row" style="margin-top:16px">
     <button id="fCancel" class="btn">キャンセル</button>
     <button id="fSave" class="btn pri">保存</button>
   </div>
-  <div class="row" style="margin-top:8px">
-    <button id="fDel" class="btn warn" style="display:none">この地点を削除</button>
-  </div>
+  <button id="fDel" class="btn warn wide" style="margin-top:8px;display:none">この地点を削除</button>
 </div>
 
-<!-- 地点アクションシート -->
+<!-- 地点のメニュー -->
 <div id="act" class="sheet">
   <h2 id="actTitle"></h2>
   <div id="actMeta" class="sub"></div>
   <div style="display:grid;gap:8px;margin-top:16px">
-    <a id="actNav" class="btn pri" style="text-align:center;text-decoration:none">ナビ開始</a>
-    <a id="actMap" class="btn" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Googleマップで表示</a>
-    <button id="actEdit" class="btn">編集</button>
-    <button id="actClose" class="btn">閉じる</button>
+    <button id="actInsp" class="btn pri">点検を記録</button>
+    <a id="actNav" class="btn">この地点へナビ</a>
+    <button id="actHist" class="btn">点検履歴</button>
+    <button id="actEdit" class="btn">地点を編集</button>
+    <a id="actMap" class="btn" target="_blank" rel="noopener">Googleマップで表示</a>
+    <button class="btn close">閉じる</button>
   </div>
+</div>
+
+<!-- 点検記録(マンホールポンプ) -->
+<div id="insp" class="sheet">
+  <h2 id="inspTitle"></h2>
+  <div id="inspPrev" class="note"></div>
+  <label>運転時間</label>
+  <div class="row">
+    <div><label for="iMp1" style="margin-top:0">MP1(h)</label><input id="iMp1" inputmode="decimal" autocomplete="off"><div id="dMp1" class="sub"></div></div>
+    <div><label for="iMp2" style="margin-top:0">MP2(h)</label><input id="iMp2" inputmode="decimal" autocomplete="off"><div id="dMp2" class="sub"></div></div>
+  </div>
+  <label for="iOther">その他</label>
+  <textarea id="iOther" placeholder="異常・気付いたこと"></textarea>
+  <div class="row" style="margin-top:16px">
+    <button class="btn close">キャンセル</button>
+    <button id="iSave" class="btn pri">点検済みにする</button>
+  </div>
+</div>
+
+<!-- 点検履歴 -->
+<div id="hist" class="sheet">
+  <h2 id="histTitle"></h2>
+  <div id="histList"></div>
+  <button class="btn close wide" style="margin-top:12px">閉じる</button>
+</div>
+
+<!-- 地区の管理 -->
+<div id="dist" class="sheet">
+  <h2>地区の管理</h2>
+  <div class="sub" style="margin-bottom:8px">名前を書き換えて「保存」すると、所属する地点もまとめて変わります。地点がない地区だけ削除できます。</div>
+  <div id="distRows"></div>
+  <label for="distNew">新しい地区</label>
+  <div class="drow"><input id="distNew" placeholder="地区名"><button id="distAdd" class="mini go">追加</button></div>
+  <button class="btn close wide" style="margin-top:8px">閉じる</button>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
 'use strict';
-const KEY = 'pinlog.points.v1';
-const DUP_M = 30;           // この距離以内に既存地点があれば警告
-const GOOD_ACC = 30;        // 誤差がこれ以下なら「良好」
+// ---------- 設定 ----------
+const K = { P: 'pinlog.points.v1', D: 'pinlog.districts.v1', I: 'pinlog.insp.v1', T: 'pinlog.patrol.v1', LD: 'pinlog.lastDistrict' };
+const TAGS = { mp: 'マンホールポンプ', site: '施工現場' };
+const TAG_SHORT = { mp: 'MP', site: '施工現場' };
+const DUP_M = 30;      // この距離以内に既存地点があれば警告
+const GOOD_ACC = 30;   // 誤差がこれ以下なら「良好」
+const MAX_STOPS = 10;  // Googleマップに一度に送れる地点数(経由地9+目的地)
 
 // ---------- データ ----------
-let points = load();
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(points)); }catch(e){ toast('保存に失敗しました:' + e.message); } }
+function ld(k, def){ try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; } catch(e) { return def; } }
+function sv(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { toast('保存に失敗しました:' + e.message); } }
+let points = ld(K.P, []), districts = ld(K.D, []), insps = ld(K.I, []), patrol = ld(K.T, null);
+(function migrate(){ // 旧版(カテゴリ)からの移行
+  let ch = false;
+  points.forEach(p => {
+    if (p.district === undefined) { p.district = p.category || ''; delete p.category; ch = true; }
+    if (!TAGS[p.tag]) { p.tag = 'mp'; ch = true; }
+  });
+  const set = new Set(districts);
+  points.forEach(p => { if (p.district && !set.has(p.district)) { districts.push(p.district); set.add(p.district); ch = true; } });
+  if (ch) { sv(K.P, points); sv(K.D, districts); }
+  localStorage.removeItem('pinlog.routes.v1');
+})();
+const savePoints = () => sv(K.P, points), saveDists = () => sv(K.D, districts), saveInsps = () => sv(K.I, insps), savePatrol = () => sv(K.T, patrol);
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 // ---------- ユーティリティ ----------
 const $ = id => document.getElementById(id);
-function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 3000); }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function dist(a, b){ // メートル
+function dist(a, b){
   const R = 6371000, r = Math.PI / 180;
   const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
   const h = Math.sin(dLat/2)**2 + Math.cos(a.lat*r) * Math.cos(b.lat*r) * Math.sin(dLng/2)**2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 function fmtDist(m){ return m < 1000 ? Math.round(m) + 'm' : (m/1000).toFixed(m < 10000 ? 1 : 0) + 'km'; }
-function fmtDate(iso){ const d = new Date(iso); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+const pad = n => String(n).padStart(2, '0');
+function fmtDate(iso){ const d = new Date(iso); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtDay(iso){ const d = new Date(iso); return `${d.getMonth()+1}/${d.getDate()}`; }
+function fmtTime(iso){ const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+const localDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
 const dispName = p => p.name || '(名前なし)';
-const navUrl = p => `google.navigation:q=${p.lat},${p.lng}`;
-const navWebUrl = p => `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving`;
-const mapUrl = p => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-const cats = () => [...new Set(points.map(p => p.category).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ja'));
+const distLabel = d => d || '(地区なし)';
+const ll = p => `${p.lat},${p.lng}`;
+const navUrl = p => `google.navigation:q=${ll(p)}`;
+const navWebUrl = p => `https://www.google.com/maps/dir/?api=1&destination=${ll(p)}&travelmode=driving`;
+const mapUrl = p => `https://www.google.com/maps/search/?api=1&query=${ll(p)}`;
+const byId = id => points.find(p => p.id === id);
+const sortedDists = () => districts.slice().sort((a,b) => a.localeCompare(b, 'ja'));
+const tagChip = p => `<span class="tag ${p.tag}">${TAG_SHORT[p.tag]}</span>`;
+const num = v => { const s = String(v ?? '').trim().replace(/,/g, ''); return s === '' || isNaN(+s) ? null : +s; };
+function lastMap(){ const m = {}; insps.forEach(i => { if (!m[i.pointId] || m[i.pointId].at < i.at) m[i.pointId] = i; }); return m; }
+const lastInsp = pid => lastMap()[pid];
+function inspSummary(i){
+  if (!i) return '';
+  const parts = [];
+  if (i.mp1 != null) parts.push(`MP1 ${i.mp1}h`);
+  if (i.mp2 != null) parts.push(`MP2 ${i.mp2}h`);
+  if (i.other) parts.push(i.other);
+  return parts.join(' / ');
+}
+function openLink(url){ const a = document.createElement('a'); a.href = url; if (/^https?:/.test(url)) { a.target = '_blank'; a.rel = 'noopener'; } document.body.appendChild(a); a.click(); a.remove(); }
+const isAndroid = /Android/i.test(navigator.userAgent);
+function armed(btn, label, fn){ // 2回押しで実行(誤操作防止)
+  if (!btn._armed) { btn._armed = true; btn.textContent = 'もう一度押すと' + label; setTimeout(() => { btn._armed = false; btn.textContent = btn.dataset.label; }, 3000); return; }
+  btn._armed = false; btn.textContent = btn.dataset.label; fn();
+}
 
 // ---------- 画面切替 ----------
+let cur = 'rec';
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
 function show(v){
+  cur = v;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
-  if (v === 'list') renderList();
-  if (v === 'exp') renderExport();
-  if (v === 'route') renderRoute();
   if (v !== 'list' && selMode) setSelMode(false);
-  window.scrollTo(0, 0);
+  refresh(); window.scrollTo(0, 0);
 }
+function refresh(){
+  if (cur === 'rec') renderRecent();
+  if (cur === 'list') renderList();
+  if (cur === 'patrol') renderPatrol();
+  if (cur === 'exp') renderExport();
+}
+
+// ---------- シート ----------
+function openSheet(id){ closeSheets(); $('toast').classList.remove('on');$('sheetBg').classList.add('on'); $(id).classList.add('on'); }
+function closeSheets(){ document.querySelectorAll('.sheet,.sheet-bg').forEach(e => e.classList.remove('on')); }
+$('sheetBg').onclick = closeSheets;
+document.querySelectorAll('.sheet .close').forEach(b => b.onclick = closeSheets);
 
 // ---------- GPS ----------
 let fix = null;
 function startGps(){
   if (!('geolocation' in navigator)) { $('accText').textContent = 'この端末では位置情報が使えません'; return; }
   navigator.geolocation.watchPosition(pos => {
+    const first = !fix;
     fix = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, t: pos.timestamp };
     const good = fix.acc <= GOOD_ACC;
     $('accText').innerHTML = `誤差 約<b class="${good ? 'acc-good' : 'acc-bad'}">${Math.round(fix.acc)}m</b>` + (good ? '(良好)' : '(屋外で少し待つと改善します)');
     $('posText').textContent = `${fix.lat.toFixed(6)}, ${fix.lng.toFixed(6)}`;
     $('recBtn').disabled = false; $('recBtn').textContent = 'ここを記録';
+    if (first) refresh();
   }, err => {
     const msg = { 1: '位置情報の許可がありません。ブラウザの設定で許可してください', 2: '位置を取得できません', 3: '位置の取得がタイムアウトしました' }[err.code] || err.message;
     $('accText').textContent = msg;
   }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
 }
 
-// ---------- 記録・編集 ----------
-let editing = null; // {isNew, data}
+// ---------- 地点の記録・編集 ----------
+let editing = null, fTag = 'mp';
+function setTag(t){ fTag = t; $('fTag').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); }
+$('fTag').querySelectorAll('button').forEach(b => b.onclick = () => setTag(b.dataset.t));
+function fillDistSelect(sel, value){
+  sel.innerHTML = '<option value="">(地区なし)</option>' + sortedDists().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('') + '<option value="__new">+ 新しい地区を追加</option>';
+  sel.value = districts.includes(value) ? value : '';
+}
+$('fDist').onchange = () => { const n = $('fDist').value === '__new'; $('fDistNew').style.display = n ? '' : 'none'; if (n) $('fDistNew').focus(); };
 $('recBtn').onclick = () => {
   if (!fix) return;
   if (Date.now() - fix.t > 60000) { toast('位置が古いため更新を待っています'); return; }
-  const p = { id: uid(), lat: +fix.lat.toFixed(6), lng: +fix.lng.toFixed(6), accuracy: Math.round(fix.acc),
-              recordedAt: new Date().toISOString(), name: '', note: '', category: '' };
-  openEdit(p, true);
+  openEdit({ id: uid(), lat: +fix.lat.toFixed(6), lng: +fix.lng.toFixed(6), accuracy: Math.round(fix.acc),
+             recordedAt: new Date().toISOString(), name: '', note: '', district: localStorage.getItem(K.LD) || '', tag: 'mp' }, true);
 };
 function openEdit(p, isNew){
   editing = { isNew, data: p };
   $('editTitle').textContent = isNew ? '地点を記録' : '地点を編集';
-  $('fName').value = p.name; $('fCat').value = p.category; $('fNote').value = p.note;
+  setTag(p.tag || 'mp');
+  $('fName').value = p.name; $('fNote').value = p.note;
+  fillDistSelect($('fDist'), p.district); $('fDistNew').value = ''; $('fDistNew').style.display = 'none';
   $('fMeta').textContent = `${p.lat}, ${p.lng} ・ 誤差 ${p.accuracy ?? '-'}m ・ ${fmtDate(p.recordedAt)}`;
   $('fDel').style.display = isNew ? 'none' : '';
-  $('catList').innerHTML = cats().map(c => `<option value="${esc(c)}">`).join('');
   const near = points.filter(q => q.id !== p.id).map(q => ({ q, d: dist(p, q) })).filter(x => x.d <= DUP_M).sort((a,b) => a.d - b.d);
-  if (isNew && near.length) {
-    $('dupWarn').style.display = '';
-    $('dupWarn').textContent = `近くに「${dispName(near[0].q)}」があります(${fmtDist(near[0].d)})。重複していないか確認してください。`;
-  } else $('dupWarn').style.display = 'none';
+  $('dupWarn').style.display = isNew && near.length ? '' : 'none';
+  if (isNew && near.length) $('dupWarn').textContent = `近くに「${dispName(near[0].q)}」があります(${fmtDist(near[0].d)})。重複していないか確認してください。`;
   openSheet('edit');
 }
+$('fCancel').onclick = closeSheets;
 $('fSave').onclick = () => {
   const p = editing.data;
-  p.name = $('fName').value.trim(); p.category = $('fCat').value.trim(); p.note = $('fNote').value.trim();
+  let d = $('fDist').value;
+  if (d === '__new') {
+    d = $('fDistNew').value.trim();
+    if (!d) { toast('新しい地区名を入力してください'); return; }
+    if (!districts.includes(d)) { districts.push(d); saveDists(); }
+  }
+  p.name = $('fName').value.trim(); p.note = $('fNote').value.trim(); p.district = d; p.tag = fTag;
   p.updatedAt = new Date().toISOString();
-  if (editing.isNew) points.unshift(p);
-  save(); closeSheets(); renderRecent(); renderList();
+  if (editing.isNew) { points.unshift(p); localStorage.setItem(K.LD, d); }
+  savePoints(); closeSheets(); refresh();
   toast(editing.isNew ? '記録しました' : '更新しました');
 };
-$('fCancel').onclick = closeSheets;
-let delArmed = false;
-$('fDel').onclick = () => {
-  if (!delArmed) { delArmed = true; $('fDel').textContent = 'もう一度押すと削除します'; setTimeout(() => { delArmed = false; $('fDel').textContent = 'この地点を削除'; }, 3000); return; }
-  delArmed = false; $('fDel').textContent = 'この地点を削除';
-  points = points.filter(q => q.id !== editing.data.id);
-  save(); closeSheets(); renderRecent(); renderList(); toast('削除しました');
-};
+$('fDel').dataset.label = 'この地点を削除';
+$('fDel').onclick = () => armed($('fDel'), '削除します', () => {
+  const id = editing.data.id;
+  points = points.filter(q => q.id !== id);
+  if (patrol) { patrol.ids = patrol.ids.filter(x => x !== id); delete patrol.done[id]; savePatrol(); }
+  savePoints(); closeSheets(); refresh(); toast('削除しました');
+});
 
-// ---------- シート ----------
-function openSheet(id){ $('sheetBg').classList.add('on'); $(id).classList.add('on'); }
-function closeSheets(){ document.querySelectorAll('.sheet,.sheet-bg').forEach(e => e.classList.remove('on')); }
-$('sheetBg').onclick = closeSheets;
-
+// ---------- 地点のメニュー ----------
 let actP = null;
 function openAct(p){
   actP = p;
   $('actTitle').textContent = dispName(p);
+  const li = lastInsp(p.id);
   const d = fix ? ' ・ ここから ' + fmtDist(dist(fix, p)) : '';
-  $('actMeta').innerHTML = (p.category ? `<span class="tag">${esc(p.category)}</span>` : '') + esc(fmtDate(p.recordedAt)) + esc(d) + (p.note ? `<div class="note">${esc(p.note)}</div>` : '');
-  $('actNav').href = /Android/i.test(navigator.userAgent) ? navUrl(p) : navWebUrl(p);
+  $('actMeta').innerHTML = tagChip(p) + `<span class="tag">${esc(distLabel(p.district))}</span>` + esc(d) +
+    `<div class="note">最終点検:${li ? esc(fmtDate(li.at)) + (inspSummary(li) ? '\n' + esc(inspSummary(li)) : '') : 'なし'}</div>` +
+    (p.note ? `<div class="note">${esc(p.note)}</div>` : '');
+  $('actNav').href = isAndroid ? navUrl(p) : navWebUrl(p);
   $('actMap').href = mapUrl(p);
   openSheet('act');
 }
-$('actEdit').onclick = () => { closeSheets(); openEdit(actP, false); };
-$('actClose').onclick = closeSheets;
+$('actInsp').onclick = () => doInspect(actP);
+$('actHist').onclick = () => openHist(actP);
+$('actEdit').onclick = () => openEdit(actP, false);
+
+// ---------- 点検 ----------
+let inspP = null;
+function doInspect(p){
+  if (p.tag !== 'mp') { // 施工現場はメモなしで即「済」
+    const rec = addInsp({ pointId: p.id });
+    closeSheets(); refresh(); undoToast(`「${dispName(p)}」を点検済みにしました`, rec.id);
+    return;
+  }
+  inspP = p;
+  const li = lastInsp(p.id);
+  $('inspTitle').textContent = '点検:' + dispName(p);
+  $('inspPrev').textContent = li ? `前回 ${fmtDate(li.at)}\n${inspSummary(li) || '(メモなし)'}` : '前回の記録はありません';
+  $('iMp1').value = ''; $('iMp2').value = ''; $('iOther').value = '';
+  showDiff();
+  openSheet('insp');
+}
+function showDiff(){
+  const li = inspP && lastInsp(inspP.id);
+  [['iMp1','dMp1','mp1'],['iMp2','dMp2','mp2']].forEach(([i, d, k]) => {
+    const v = num($(i).value), pv = li ? li[k] : null;
+    $(d).textContent = v != null && pv != null ? `前回比 ${v - pv >= 0 ? '+' : ''}${+(v - pv).toFixed(1)}h` : (pv != null ? `前回 ${pv}h` : '');
+    $(d).style.color = v != null && pv != null && v < pv ? 'var(--warn)' : '';
+  });
+}
+$('iMp1').oninput = showDiff; $('iMp2').oninput = showDiff;
+$('iSave').onclick = () => {
+  const r1 = $('iMp1').value.trim(), r2 = $('iMp2').value.trim();
+  if ((r1 && num(r1) == null) || (r2 && num(r2) == null)) { toast('運転時間は数字で入力してください'); return; }
+  const rec = addInsp({ pointId: inspP.id, mp1: num(r1), mp2: num(r2), other: $('iOther').value.trim() });
+  closeSheets(); refresh(); undoToast(`「${dispName(inspP)}」の点検を記録しました`, rec.id);
+};
+function addInsp(r){
+  const rec = { id: uid(), at: new Date().toISOString(), mp1: null, mp2: null, other: '', ...r };
+  insps.push(rec); saveInsps();
+  if (patrol && patrol.ids.includes(rec.pointId) && !patrol.done[rec.pointId]) { patrol.done[rec.pointId] = rec.id; savePatrol(); }
+  return rec;
+}
+function removeInsp(id){
+  insps = insps.filter(i => i.id !== id); saveInsps();
+  if (patrol) for (const k in patrol.done) if (patrol.done[k] === id) { delete patrol.done[k]; savePatrol(); }
+}
+function undoToast(msg){ toast(msg); }
+function openHist(p){
+  $('histTitle').textContent = '点検履歴:' + dispName(p);
+  const list = insps.filter(i => i.pointId === p.id).sort((a,b) => b.at.localeCompare(a.at));
+  $('histList').innerHTML = list.map(i => `<div class="hist"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1">${esc(fmtDate(i.at))}</b>
+    <button class="mini" data-id="${i.id}" data-label="削除">削除</button></div><div class="sub">${esc(inspSummary(i) || '(メモなし)')}</div></div>`).join('') || '<div class="sub">まだ点検記録がありません</div>';
+  $('histList').querySelectorAll('.mini').forEach(b => b.onclick = () => armed(b, '削除', () => { removeInsp(b.dataset.id); openHist(p); refresh(); toast('点検記録を削除しました'); }));
+  openSheet('hist');
+}
+
+// ---------- 地区の管理 ----------
+$('distManage').onclick = openDist;
+function openDist(){
+  const cnt = d => points.filter(p => p.district === d).length;
+  $('distRows').innerHTML = sortedDists().map(d => `<div class="drow"><input value="${esc(d)}" data-old="${esc(d)}">
+    <button class="mini go" data-a="save">保存</button><button class="mini" data-a="del" data-label="削除" ${cnt(d) ? 'disabled' : ''}>削除</button><span class="sub" style="min-width:36px">${cnt(d)}件</span></div>`).join('') || '<div class="sub">まだ地区がありません</div>';
+  $('distRows').querySelectorAll('.drow').forEach(row => {
+    const inp = row.querySelector('input'), old = inp.dataset.old;
+    row.querySelector('[data-a=save]').onclick = () => {
+      const nv = inp.value.trim();
+      if (!nv) { toast('地区名を入力してください'); return; }
+      if (nv === old) return;
+      if (districts.includes(nv)) { toast('同じ名前の地区があります'); return; }
+      districts = districts.map(d => d === old ? nv : d);
+      points.forEach(p => { if (p.district === old) p.district = nv; });
+      if (patrol) patrol.districts = patrol.districts.map(d => d === old ? nv : d);
+      if (localStorage.getItem(K.LD) === old) localStorage.setItem(K.LD, nv);
+      saveDists(); savePoints(); if (patrol) savePatrol(); openDist(); refresh(); toast('地区名を変更しました');
+    };
+    const del = row.querySelector('[data-a=del]');
+    del.onclick = () => armed(del, '削除', () => { districts = districts.filter(d => d !== old); saveDists(); openDist(); refresh(); toast('地区を削除しました'); });
+  });
+  if (!$('dist').classList.contains('on')) openSheet('dist');
+}
+$('distAdd').onclick = () => {
+  const n = $('distNew').value.trim();
+  if (!n) return;
+  if (districts.includes(n)) { toast('同じ名前の地区があります'); return; }
+  districts.push(n); saveDists(); $('distNew').value = ''; openDist(); refresh(); toast('地区を追加しました');
+};
 
 // ---------- 一覧 ----------
-function itemHtml(p, selectable){
+let selMode = false, selected = [];
+function itemHtml(p, lm, selectable){
   const d = fix ? `<span class="sub" style="float:right">${fmtDist(dist(fix, p))}</span>` : '';
   const on = selectable && selected.includes(p.id);
   const chk = selectable ? `<span class="chk">${on ? selected.indexOf(p.id) + 1 : ''}</span>` : '';
+  const li = lm[p.id];
   return `<button class="item ${on ? 'sel' : ''}" data-id="${p.id}">${d}<div class="t ${p.name ? '' : 'unnamed'}">${chk}${esc(dispName(p))}</div>
-    <div class="sub">${p.category ? `<span class="tag">${esc(p.category)}</span>` : ''}${esc(fmtDate(p.recordedAt))}</div></button>`;
+    <div class="sub" style="margin-top:4px">${tagChip(p)}<span class="tag">${esc(distLabel(p.district))}</span>${li ? '最終点検 ' + esc(fmtDay(li.at)) : '未点検'}</div></button>`;
 }
 function bindItems(root, selectable){
-  root.querySelectorAll('.item').forEach(b => b.onclick = () => {
-    if (selectable) { toggleSel(b.dataset.id); return; }
-    openAct(points.find(p => p.id === b.dataset.id));
-  });
+  root.querySelectorAll('.item').forEach(b => b.onclick = () => selectable ? toggleSel(b.dataset.id) : openAct(byId(b.dataset.id)));
 }
-
-// ---------- 複数選択 ----------
-let selMode = false, selected = [];
+function renderRecent(){
+  const lm = lastMap();
+  const r = points.slice().sort((a,b) => b.recordedAt.localeCompare(a.recordedAt)).slice(0, 3);
+  $('recent').innerHTML = r.length ? r.map(p => itemHtml(p, lm)).join('') : 'まだありません';
+  bindItems($('recent'));
+}
+function fillDistFilter(sel, allLabel){
+  const v = sel.value;
+  sel.innerHTML = `<option value="*">${allLabel}</option>` + sortedDists().map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('') +
+    (points.some(p => !p.district) ? '<option value="">(地区なし)</option>' : '');
+  sel.value = [...sel.options].some(o => o.value === v) ? v : '*';
+}
+const inDist = v => p => v === '*' || (p.district || '') === v;
+function renderList(){
+  fillDistFilter($('distFilter'), 'すべての地区');
+  const q = $('q').value.trim().toLowerCase(), tf = $('tagFilter').value, lm = lastMap();
+  let r = points.filter(inDist($('distFilter').value)).filter(p => !tf || p.tag === tf)
+    .filter(p => !q || (p.name + ' ' + p.note + ' ' + p.district).toLowerCase().includes(q));
+  const s = $('sortSel').value;
+  if (s === 'near' && fix) r.sort((a,b) => dist(fix, a) - dist(fix, b));
+  else if (s === 'old') r.sort((a,b) => (lm[a.id]?.at || '').localeCompare(lm[b.id]?.at || ''));
+  else if (s === 'name') r.sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja'));
+  else r.sort((a,b) => b.recordedAt.localeCompare(a.recordedAt));
+  $('count').textContent = `${r.length}件`;
+  $('list').innerHTML = r.map(p => itemHtml(p, lm, selMode)).join('') || '<div class="sub">該当する地点がありません</div>';
+  bindItems($('list'), selMode);
+}
+['q','distFilter','tagFilter','sortSel'].forEach(id => $(id).addEventListener('input', renderList));
 function setSelMode(on){
   selMode = on; if (!on) selected = [];
   $('selToggle').textContent = on ? '完了' : '選択';
   $('selToggle').classList.toggle('pri', on);
-  updateSelBar(); renderList();
+  updateSelBar(); if (cur === 'list') renderList();
 }
-function toggleSel(id){
-  const i = selected.indexOf(id);
-  if (i >= 0) selected.splice(i, 1); else selected.push(id);
-  updateSelBar(); renderList();
-}
+function toggleSel(id){ const i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); else selected.push(id); updateSelBar(); renderList(); }
 function updateSelBar(){
   $('selBar').classList.toggle('on', selMode);
   $('selCount').textContent = `${selected.length}件選択`;
-  $('selRoute').disabled = selected.length < 1;
+  $('selGo').disabled = !selected.length;
+  $('selGo').textContent = patrol ? '巡回に追加' : '巡回を開始';
   document.querySelector('main').style.paddingBottom = selMode ? '160px' : '';
 }
 $('selToggle').onclick = () => setSelMode(!selMode);
 $('selClear').onclick = () => { selected = []; updateSelBar(); renderList(); };
-$('selRoute').onclick = () => {
-  draft = { id: null, name: '', ids: selected.slice(), endId: '' };
-  if (fix) draft.ids = orderFar(draft.ids);
-  setSelMode(false); show('route');
-  if (!fix) toast('現在地が未取得のため、選んだ順のままです');
+$('selGo').onclick = () => {
+  if (patrol) {
+    const add = selected.filter(id => !patrol.ids.includes(id));
+    patrol.ids.push(...add); savePatrol(); toast(`${add.length}か所を巡回に追加しました`);
+  } else {
+    startPatrol(selected.slice(), [...new Set(selected.map(id => byId(id).district || ''))]);
+  }
+  setSelMode(false); show('patrol');
 };
 
-// ---------- ルート ----------
-const RKEY = 'pinlog.routes.v1';
-const MAX_STOPS = 10; // 目的地+経由地9(Googleマップアプリの上限)
-let routes = (() => { try { return JSON.parse(localStorage.getItem(RKEY)) || []; } catch(e) { return []; } })();
-function saveRoutes(){ try { localStorage.setItem(RKEY, JSON.stringify(routes)); } catch(e) { toast('保存に失敗しました:' + e.message); } }
-let draft = null;
-const byId = id => points.find(p => p.id === id);
-const alive = ids => ids.filter(byId);
-
-// start から毎回いちばん近い地点をたどる
-function greedy(start, ids){
-  const rest = ids.map(byId).filter(Boolean), out = [];
-  let cur = start;
+// ---------- 巡回 ----------
+function startPatrol(ids, dists){
+  patrol = { ids, done: {}, districts: dists, startedAt: new Date().toISOString(), order: 'far', endId: '' };
+  savePatrol(); toast(`${ids.length}か所で巡回を開始しました`);
+}
+function greedy(start, ps){ // start から毎回いちばん近い地点をたどる
+  const rest = ps.slice(), out = [];
+  let c = start;
   while (rest.length) {
     let bi = 0;
-    for (let i = 1; i < rest.length; i++) if (dist(cur, rest[i]) < dist(cur, rest[bi])) bi = i;
-    cur = rest.splice(bi, 1)[0]; out.push(cur.id);
+    for (let i = 1; i < rest.length; i++) if (dist(c, rest[i]) < dist(c, rest[bi])) bi = i;
+    c = rest.splice(bi, 1)[0]; out.push(c);
   }
   return out;
 }
-const orderNear = ids => greedy(fix, ids);
-function orderFar(ids){ // 最遠の地点から、帰り道で近い順にたどる
-  const ps = ids.map(byId).filter(Boolean);
-  if (!ps.length) return [];
+function ordered(ps){
+  if (!fix || !ps.length) return ps;
+  if (patrol.order === 'near') return greedy(fix, ps);
   const f = ps.reduce((a, b) => dist(fix, b) > dist(fix, a) ? b : a);
-  return [f.id, ...greedy(f, ps.filter(p => p !== f).map(p => p.id))];
+  return [f, ...greedy(f, ps.filter(p => p !== f))];
 }
-function needFix(){ if (!fix) { toast('現在地を取得中です。少し待ってください'); return false; } return true; }
-$('oFar').onclick = () => { if (needFix()) { draft.ids = orderFar(draft.ids); renderRoute(); toast('遠い順に並べました'); } };
-$('oNear').onclick = () => { if (needFix()) { draft.ids = orderNear(draft.ids); renderRoute(); toast('近い順に並べました'); } };
-$('oRev').onclick = () => { draft.ids.reverse(); renderRoute(); toast('逆順にしました'); };
-$('endSel').onchange = () => { draft.endId = $('endSel').value; renderRoute(); };
-
-function routeUrl(fromIdx){
-  let stops = alive(draft.ids).slice(fromIdx).map(byId);
-  const end = draft.endId && byId(draft.endId);
+const remaining = () => ordered(patrol.ids.map(byId).filter(p => p && !patrol.done[p.id]));
+function renderPatrol(){
+  const active = !!patrol;
+  $('pStart').style.display = active ? 'none' : '';
+  $('pActive').style.display = active ? '' : 'none';
+  if (!active) {
+    const lm = lastMap();
+    const ds = sortedDists().concat(points.some(p => !p.district) ? [''] : []);
+    $('pDists').innerHTML = ds.map(d => {
+      const ps = points.filter(p => (p.district || '') === d);
+      const lastDay = ps.map(p => lm[p.id]?.at).filter(Boolean).sort().pop();
+      return `<label class="dchk"><input type="checkbox" value="${esc(d)}" ${ps.length ? '' : 'disabled'}><span style="flex:1;color:var(--fg);font-size:16px">${esc(distLabel(d))}</span>
+        <span class="sub">${ps.length}か所${lastDay ? '・前回 ' + esc(fmtDay(lastDay)) : ''}</span></label>`;
+    }).join('') || '<div class="sub">まだ地点がありません。「記録」から登録してください。</div>';
+    return;
+  }
+  const total = patrol.ids.filter(byId).length, doneN = patrol.ids.filter(id => byId(id) && patrol.done[id]).length;
+  $('pTitle').textContent = '巡回中:' + (patrol.districts.map(distLabel).join('、') || '選択した地点');
+  $('pBar').style.width = total ? (doneN / total * 100) + '%' : '0';
+  $('pProg').textContent = `${doneN} / ${total} か所 点検済み ・ ${fmtDate(patrol.startedAt)} 開始`;
+  document.querySelectorAll('#pActive .seg button').forEach(b => b.classList.toggle('on', b.dataset.o === patrol.order));
+  $('endSel').innerHTML = '<option value="">なし(最後の地点で終了)</option>' +
+    points.slice().sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja')).map(p => `<option value="${p.id}">${esc(dispName(p))}</option>`).join('');
+  $('endSel').value = patrol.endId && byId(patrol.endId) ? patrol.endId : '';
+  const rem = remaining();
+  const end = patrol.endId && byId(patrol.endId);
+  const n = Math.min(rem.length, MAX_STOPS - (end ? 1 : 0));
+  $('pNav').disabled = !rem.length && !end;
+  $('pNav').textContent = rem.length ? `残りをナビ(次の${n}か所${end ? '+帰着地' : ''})` : (end ? '帰着地へナビ' : 'すべて点検済みです');
+  $('remTitle').textContent = `未点検(${rem.length})`;
+  let prev = fix;
+  $('pRem').innerHTML = rem.map((p, i) => {
+    const d = prev ? dist(prev, p) : null; prev = p;
+    return `<div class="stop"><span class="num">${i + 1}</span><div class="nm"><div class="t">${esc(dispName(p))}</div>
+      <div class="sub">${tagChip(p)}${d != null ? (i ? '前から' : '現在地から') + ' ' + fmtDist(d) : ''}</div></div>
+      <button class="mini go" data-a="nav" data-id="${p.id}">▶</button><button class="mini ok" data-a="insp" data-id="${p.id}">点検</button></div>`;
+  }).join('') || '<div class="sub">未点検の地点はありません</div>';
+  const doneList = patrol.ids.map(byId).filter(p => p && patrol.done[p.id]).map(p => ({ p, i: insps.find(x => x.id === patrol.done[p.id]) })).sort((a,b) => (b.i?.at || '').localeCompare(a.i?.at || ''));
+  $('doneTitle').textContent = `点検済み(${doneList.length})`;
+  $('pDone').innerHTML = doneList.map(({p, i}) => `<div class="stop"><span class="num done">✓</span><div class="nm"><div class="t">${esc(dispName(p))}</div>
+      <div class="sub">${i ? esc(fmtDay(i.at) + ' ' + fmtTime(i.at)) : ''} ${esc(inspSummary(i))}</div></div>
+      <button class="mini" data-a="undo" data-id="${p.id}" data-label="取消">取消</button></div>`).join('') || '<div class="sub">まだありません</div>';
+  document.querySelectorAll('#pRem .mini, #pDone .mini').forEach(b => b.onclick = () => {
+    const p = byId(b.dataset.id);
+    if (b.dataset.a === 'nav') openLink(isAndroid ? navUrl(p) : navWebUrl(p));
+    if (b.dataset.a === 'insp') doInspect(p);
+    if (b.dataset.a === 'undo') armed(b, '取消', () => { removeInsp(patrol.done[p.id]); refresh(); toast('点検済みを取り消しました'); });
+  });
+}
+$('pBegin').onclick = () => {
+  const ds = [...$('pDists').querySelectorAll('input:checked')].map(i => i.value);
+  if (!ds.length) { toast('地区を選んでください'); return; }
+  startPatrol(points.filter(p => ds.includes(p.district || '')).map(p => p.id), ds);
+  renderPatrol();
+};
+document.querySelectorAll('#pActive .seg button').forEach(b => b.onclick = () => { patrol.order = b.dataset.o; savePatrol(); renderPatrol(); });
+$('endSel').onchange = () => { patrol.endId = $('endSel').value; savePatrol(); renderPatrol(); };
+$('pResort').onclick = () => { renderPatrol(); toast(fix ? '現在地で並べ直しました' : '現在地を取得中です'); };
+$('pNav').onclick = () => {
+  const end = patrol.endId && byId(patrol.endId);
+  const rem = remaining();
+  const stops = rem.slice(0, MAX_STOPS - (end ? 1 : 0));
   if (end) stops.push(end);
-  const cut = stops.length > MAX_STOPS ? stops.length - MAX_STOPS : 0;
-  stops = stops.slice(0, MAX_STOPS);
-  const ll = p => `${p.lat},${p.lng}`;
+  if (!stops.length) return;
   const dest = stops[stops.length - 1], wps = stops.slice(0, -1);
   let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${ll(dest)}`;
   if (wps.length) url += '&waypoints=' + wps.map(ll).join('%7C');
-  return { url, cut };
-}
-function startNav(fromIdx){
-  if (!alive(draft.ids).slice(fromIdx).length && !draft.endId) { toast('地点がありません'); return; }
-  const { url, cut } = routeUrl(fromIdx);
-  if (cut) toast(`Googleマップの上限で、先頭から${MAX_STOPS}か所だけ送りました。続きは${fromIdx + MAX_STOPS + 1}番目の「▶」から`);
-  const a = document.createElement('a');
-  a.href = url; a.target = '_blank'; a.rel = 'noopener';
-  document.body.appendChild(a); a.click(); a.remove();
-}
-$('routeNav').onclick = () => startNav(0);
-
-function renderRoute(){
-  $('routes').innerHTML = routes.length ? routes.map(r => `<button class="item" data-rid="${r.id}"><div class="t">${esc(r.name)}</div><div class="sub">${alive(r.ids).length}か所${r.endId && byId(r.endId) ? ' → ' + esc(dispName(byId(r.endId))) : ''}</div></button>`).join('') : 'まだありません';
-  $('routes').querySelectorAll('.item').forEach(b => b.onclick = () => {
-    const r = routes.find(x => x.id === b.dataset.rid);
-    draft = { id: r.id, name: r.name, ids: alive(r.ids), endId: r.endId || '' };
-    renderRoute(); window.scrollTo(0, 0);
-  });
-  const has = !!draft;
-  $('draftEmpty').style.display = has ? 'none' : '';
-  $('draftBody').style.display = has ? '' : 'none';
-  if (!has) { $('draftTitle').textContent = 'ルート'; return; }
-  draft.ids = alive(draft.ids);
-  $('draftTitle').textContent = draft.id ? `ルート編集:${draft.name}` : '新しいルート';
-  $('rName').value = draft.name;
-  $('rDel').style.display = draft.id ? '' : 'none';
-  $('endSel').innerHTML = '<option value="">なし(最後の地点で終了)</option>' +
-    points.slice().sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja')).map(p => `<option value="${p.id}">${esc(dispName(p))}</option>`).join('');
-  $('endSel').value = draft.endId && byId(draft.endId) ? draft.endId : '';
-  let prev = fix, total = 0;
-  $('stops').innerHTML = draft.ids.map((id, i) => {
-    const p = byId(id);
-    const d = prev ? dist(prev, p) : null; if (d != null) total += d; prev = p;
-    return `<div class="stop"><span class="num">${i + 1}</span>
-      <div class="nm"><div>${esc(dispName(p))}</div><div class="sub">${d != null ? (i ? '前から' : '現在地から') + ' ' + fmtDist(d) : ''}</div></div>
-      <button class="mini" data-a="up" data-i="${i}" ${i ? '' : 'disabled'}>↑</button>
-      <button class="mini" data-a="down" data-i="${i}" ${i < draft.ids.length - 1 ? '' : 'disabled'}>↓</button>
-      <button class="mini" data-a="del" data-i="${i}">✕</button>
-      <button class="mini go" data-a="go" data-i="${i}">▶</button></div>`;
-  }).join('') || '<div class="sub">地点がありません</div>';
-  const end = draft.endId && byId(draft.endId);
-  if (end && prev) total += dist(prev, end);
-  const n = draft.ids.length + (end ? 1 : 0);
-  $('routeInfo').textContent = `${draft.ids.length}か所${end ? '+帰着地' : ''}・直線距離の合計 約${fmtDist(total)}` + (n > MAX_STOPS ? `(${MAX_STOPS}か所を超える分は、途中の「▶」から続けて送ります)` : '');
-  $('stops').querySelectorAll('.mini').forEach(b => b.onclick = () => {
-    const i = +b.dataset.i, ids = draft.ids;
-    if (b.dataset.a === 'up') [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
-    if (b.dataset.a === 'down') [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]];
-    if (b.dataset.a === 'del') ids.splice(i, 1);
-    if (b.dataset.a === 'go') { startNav(i); return; }
-    renderRoute();
-  });
-}
-$('rName').oninput = () => { if (draft) draft.name = $('rName').value; };
-$('rSave').onclick = () => {
-  const name = $('rName').value.trim() || `ルート ${fmtDate(new Date().toISOString())}`;
-  const rec = { id: draft.id || uid(), name, ids: draft.ids.slice(), endId: draft.endId, updatedAt: new Date().toISOString() };
-  const i = routes.findIndex(r => r.id === rec.id);
-  if (i >= 0) routes[i] = rec; else routes.unshift(rec);
-  draft.id = rec.id; draft.name = name;
-  saveRoutes(); renderRoute(); toast('ルートを保存しました');
+  const left = rem.length - (stops.length - (end ? 1 : 0));
+  if (left > 0) toast(`残り${left}か所は、この区間が終わったらもう一度「残りをナビ」で送ります`);
+  openLink(url);
 };
-$('rClose').onclick = () => { draft = null; renderRoute(); };
-let rDelArmed = false;
-$('rDel').onclick = () => {
-  if (!rDelArmed) { rDelArmed = true; $('rDel').textContent = 'もう一度押すと削除します'; setTimeout(() => { rDelArmed = false; $('rDel').textContent = 'このルートを削除'; }, 3000); return; }
-  rDelArmed = false; $('rDel').textContent = 'このルートを削除';
-  routes = routes.filter(r => r.id !== draft.id); saveRoutes(); draft = null; renderRoute(); toast('ルートを削除しました');
-};
-function renderRecent(){
-  const r = points.slice().sort((a,b) => b.recordedAt.localeCompare(a.recordedAt)).slice(0, 3);
-  $('recent').innerHTML = r.length ? r.map(p => itemHtml(p)).join('') : 'まだありません';
-  bindItems($('recent'));
-}
-function renderCatSelect(sel, allLabel){
-  const cur = sel.value;
-  sel.innerHTML = `<option value="">${allLabel}</option>` + cats().map(c => `<option>${esc(c)}</option>`).join('') + (points.some(p => !p.category) ? '<option value="__none">(カテゴリなし)</option>' : '');
-  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
-}
-const byCat = (c) => p => c === '' ? true : c === '__none' ? !p.category : p.category === c;
-function renderList(){
-  renderCatSelect($('catFilter'), 'すべてのカテゴリ');
-  const q = $('q').value.trim().toLowerCase();
-  let r = points.filter(byCat($('catFilter').value)).filter(p => !q || (p.name + ' ' + p.note + ' ' + p.category).toLowerCase().includes(q));
-  const s = $('sortSel').value;
-  if (s === 'near' && fix) r.sort((a,b) => dist(fix, a) - dist(fix, b));
-  else if (s === 'name') r.sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja'));
-  else r.sort((a,b) => b.recordedAt.localeCompare(a.recordedAt));
-  $('count').textContent = `${r.length}件`;
-  $('list').innerHTML = r.map(p => itemHtml(p, selMode)).join('') || '<div class="sub">該当する地点がありません</div>';
-  bindItems($('list'), selMode);
-}
-['q','catFilter','sortSel'].forEach(id => $(id).addEventListener('input', renderList));
+$('pAdd').onclick = () => { show('list'); setSelMode(true); toast('追加する地点を選んでください'); };
+$('pEnd').dataset.label = '巡回を終了';
+$('pEnd').onclick = () => armed($('pEnd'), '終了します', () => { patrol = null; localStorage.removeItem(K.T); renderPatrol(); toast('巡回を終了しました(点検記録は残ります)'); });
 
 // ---------- 出力 ----------
 function renderExport(){
-  renderCatSelect($('expCat'), 'すべて');
+  fillDistFilter($('expDist'), 'すべて'); fillDistFilter($('ixDist'), 'すべて');
   const unnamed = points.filter(p => !p.name).length;
-  $('stat').textContent = `登録 ${points.length}件` + (unnamed ? `(うち名前なし ${unnamed}件)` : '') + `・ルート ${routes.length}件`;
+  $('stat').textContent = `地点 ${points.length}件` + (unnamed ? `(うち名前なし ${unnamed}件)` : '') + `・地区 ${districts.length}・点検記録 ${insps.length}件`;
 }
 const xml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
-function descText(p){
-  return [p.note, `記録: ${fmtDate(p.recordedAt)}`, `ナビ: ${navWebUrl(p)}`].filter(Boolean).join('\n');
+function descText(p, li){
+  return [`種類: ${TAGS[p.tag]}`, p.note, li ? `最終点検: ${fmtDate(li.at)}${inspSummary(li) ? ' ' + inspSummary(li) : ''}` : '', `ナビ: ${navWebUrl(p)}`].filter(Boolean).join('\n');
 }
 function toKML(list, title){
-  const groups = {};
-  list.forEach(p => (groups[p.category || '未分類'] ||= []).push(p));
+  const lm = lastMap(), groups = {};
+  list.forEach(p => (groups[distLabel(p.district)] ||= []).push(p));
   const pm = p => `      <Placemark>
         <name>${xml(dispName(p))}</name>
-        <description>${xml(descText(p))}</description>
+        <description>${xml(descText(p, lm[p.id]))}</description>
         <ExtendedData>
-          <Data name="カテゴリ"><value>${xml(p.category)}</value></Data>
+          <Data name="地区"><value>${xml(p.district)}</value></Data>
+          <Data name="種類"><value>${xml(TAGS[p.tag])}</value></Data>
           <Data name="備考"><value>${xml(p.note)}</value></Data>
-          <Data name="記録日時"><value>${xml(p.recordedAt)}</value></Data>
-          <Data name="GPS誤差m"><value>${xml(p.accuracy)}</value></Data>
+          <Data name="最終点検"><value>${xml(lm[p.id] ? fmtDate(lm[p.id].at) : '')}</value></Data>
           <Data name="ナビ"><value>${xml(navWebUrl(p))}</value></Data>
         </ExtendedData>
         <Point><coordinates>${p.lng},${p.lat},0</coordinates></Point>
       </Placemark>`;
-  const folders = Object.keys(groups).sort((a,b) => a.localeCompare(b, 'ja')).map(c =>
-    `    <Folder>\n      <name>${xml(c)}</name>\n${groups[c].map(pm).join('\n')}\n    </Folder>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-  <Document>
-    <name>${xml(title)}</name>
-${folders}
-  </Document>
-</kml>
-`;
+  const folders = Object.keys(groups).sort((a,b) => a.localeCompare(b, 'ja')).map(g =>
+    `    <Folder>\n      <name>${xml(g)}</name>\n${groups[g].map(pm).join('\n')}\n    </Folder>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n  <Document>\n    <name>${xml(title)}</name>\n${folders}\n  </Document>\n</kml>\n`;
 }
+const csvCell = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const toCSVText = (head, rows) => '﻿' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
 function toCSV(list){
-  const c = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const head = ['name','latitude','longitude','category','note','recorded_at','accuracy_m','navi_url'];
-  const rows = list.map(p => [dispName(p), p.lat, p.lng, p.category, p.note, p.recordedAt, p.accuracy, navWebUrl(p)].map(c).join(','));
-  return '﻿' + [head.join(','), ...rows].join('\r\n') + '\r\n';
+  const lm = lastMap();
+  return toCSVText(['name','latitude','longitude','district','type','note','last_inspected','recorded_at','navi_url'],
+    list.map(p => [dispName(p), p.lat, p.lng, p.district, TAGS[p.tag], p.note, lm[p.id] ? fmtDate(lm[p.id].at) : '', p.recordedAt, navWebUrl(p)]));
 }
 function toGPX(list, title){
-  const wpt = p => `  <wpt lat="${p.lat}" lon="${p.lng}">
-    <time>${xml(p.recordedAt)}</time>
-    <name>${xml(dispName(p))}</name>
-    <desc>${xml(descText(p))}</desc>
-    <type>${xml(p.category)}</type>
-  </wpt>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="PinLog" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata><name>${xml(title)}</name></metadata>
-${list.map(wpt).join('\n')}
-</gpx>
-`;
+  const lm = lastMap();
+  const wpt = p => `  <wpt lat="${p.lat}" lon="${p.lng}">\n    <time>${xml(p.recordedAt)}</time>\n    <name>${xml(dispName(p))}</name>\n    <desc>${xml(descText(p, lm[p.id]))}</desc>\n    <type>${xml(distLabel(p.district))}</type>\n  </wpt>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="PinLog" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${xml(title)}</name></metadata>\n${list.map(wpt).join('\n')}\n</gpx>\n`;
 }
 async function deliver(text, filename, mime){
   const file = new File([text], filename, { type: mime });
@@ -567,23 +760,30 @@ async function deliver(text, filename, mime){
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   toast('ダウンロードしました');
 }
-const stamp = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
+const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`; };
 const safe = s => s.replace(/[\\/:*?"<>|\s]+/g, '_');
+const distTitle = v => v === '*' ? '全地区' : distLabel(v);
 $('expShare').onclick = () => {
-  const c = $('expCat').value;
-  const list = points.filter(byCat(c));
+  const v = $('expDist').value, list = points.filter(inDist(v));
   if (!list.length) { toast('対象の地点がありません'); return; }
-  const label = c === '' ? '全件' : c === '__none' ? '未分類' : c;
-  const title = `ピンログ_${label}`;
-  const base = safe(`${title}_${stamp()}`);
-  const f = $('expFmt').value;
+  const title = `ピンログ_${distTitle(v)}`, base = safe(`${title}_${stamp()}`), f = $('expFmt').value;
   if (f === 'kml') deliver(toKML(list, title), base + '.kml', 'application/vnd.google-earth.kml+xml');
   if (f === 'csv') deliver(toCSV(list), base + '.csv', 'text/csv');
   if (f === 'gpx') deliver(toGPX(list, title), base + '.gpx', 'application/gpx+xml');
 };
+$('ixShare').onclick = () => {
+  const v = $('ixDist').value, from = $('ixFrom').value, to = $('ixTo').value;
+  const rows = insps.filter(i => { const p = byId(i.pointId); if (!p || !inDist(v)(p)) return false; const d = localDay(i.at); return (!from || d >= from) && (!to || d <= to); })
+    .sort((a,b) => a.at.localeCompare(b.at))
+    .map(i => { const p = byId(i.pointId); return [fmtDate(i.at), p.district, dispName(p), TAGS[p.tag], i.mp1 ?? '', i.mp2 ?? '', i.other, p.lat, p.lng]; });
+  if (!rows.length) { toast('対象の点検記録がありません'); return; }
+  const name = safe(`点検記録_${distTitle(v)}_${from || '最初'}〜${to || stamp()}`) + '.csv';
+  deliver(toCSVText(['点検日時','地区','地点名','種類','MP1運転時間(h)','MP2運転時間(h)','その他','緯度','経度'], rows), name, 'text/csv');
+};
 
 // ---------- バックアップ ----------
-$('bkOut').onclick = () => deliver(JSON.stringify({ app: 'pinlog', version: 1, exportedAt: new Date().toISOString(), points, routes }, null, 1), `pinlog_backup_${stamp()}.json`, 'application/json');
+$('bkOut').onclick = () => deliver(JSON.stringify({ app: 'pinlog', version: 2, exportedAt: new Date().toISOString(), points, districts, inspections: insps, patrol }, null, 1),
+  `pinlog_backup_${stamp()}.json`, 'application/json');
 $('bkIn').onclick = () => $('bkFile').click();
 $('bkFile').onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
@@ -591,23 +791,26 @@ $('bkFile').onchange = async e => {
     const data = JSON.parse(await f.text());
     const arr = Array.isArray(data) ? data : data.points;
     if (!Array.isArray(arr)) throw new Error('形式が違います');
-    const ids = new Set(points.map(p => p.id));
-    let added = 0;
-    arr.forEach(p => { if (p && typeof p.lat === 'number' && typeof p.lng === 'number' && !ids.has(p.id)) { points.push({ name:'', note:'', category:'', ...p, id: p.id || uid() }); added++; } });
-    let addedR = 0;
-    if (Array.isArray(data.routes)) {
-      const rids = new Set(routes.map(r => r.id));
-      data.routes.forEach(r => { if (r && r.id && Array.isArray(r.ids) && !rids.has(r.id)) { routes.push(r); addedR++; } });
-      saveRoutes();
-    }
-    save(); renderExport(); renderRecent();
-    toast(`地点${added}件・ルート${addedR}件を追加しました(重複は除外)`);
+    const ids = new Set(points.map(p => p.id)); let ap = 0, ai = 0;
+    arr.forEach(p => {
+      if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number' || ids.has(p.id)) return;
+      const q = { name: '', note: '', tag: 'mp', ...p, id: p.id || uid() };
+      if (q.district === undefined) { q.district = q.category || ''; delete q.category; }
+      if (!TAGS[q.tag]) q.tag = 'mp';
+      points.push(q); ap++;
+      if (q.district && !districts.includes(q.district)) districts.push(q.district);
+    });
+    (data.districts || []).forEach(d => { if (d && !districts.includes(d)) districts.push(d); });
+    const iids = new Set(insps.map(i => i.id));
+    (data.inspections || []).forEach(i => { if (i && i.id && i.pointId && !iids.has(i.id)) { insps.push(i); ai++; } });
+    savePoints(); saveDists(); saveInsps(); refresh();
+    toast(`地点${ap}件・点検記録${ai}件を追加しました(重複は除外)`);
   } catch (err) { toast('読み込めませんでした:' + err.message); }
   e.target.value = '';
 };
 
 // ---------- 起動 ----------
-renderRecent();
+refresh();
 startGps();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
