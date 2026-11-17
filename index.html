@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1a73e8">
+<title>ピンログ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1d1f23;--sub:#5f6672;--line:#e1e4e8;--pri:#1a73e8;--pri-fg:#fff;--warn:#b3261e;--ok:#188038}
+@media (prefers-color-scheme:dark){:root{--bg:#121316;--card:#1d1f24;--fg:#e8eaed;--sub:#9aa0a6;--line:#33363c;--pri:#8ab4f8;--pri-fg:#0b1a33;--warn:#f28b82;--ok:#81c995}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:16px}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;font-weight:700;font-size:18px}
+main{padding:16px 16px 96px;max-width:640px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;color:var(--sub);padding:12px 0;font-size:14px}
+nav button.on{color:var(--pri);font-weight:700}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.big{display:block;width:100%;min-height:160px;border:0;border-radius:20px;background:var(--pri);color:var(--pri-fg);font-size:26px;font-weight:700}
+.big:disabled{opacity:.5}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:12px 14px;font-size:16px}
+.btn.pri{background:var(--pri);color:var(--pri-fg);border-color:var(--pri)}
+.btn.warn{color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1}
+.sub{color:var(--sub);font-size:14px}
+.acc-good{color:var(--ok)}.acc-bad{color:var(--warn)}
+label{display:block;font-size:14px;color:var(--sub);margin:12px 0 4px}
+input,textarea,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font-size:16px;font-family:inherit}
+textarea{min-height:80px}
+.item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--fg)}
+.item .t{font-weight:700}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin-right:6px}
+.unnamed{color:var(--warn)}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--card);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));z-index:11;display:none;max-width:640px;margin:0 auto}
+.sheet.on,.sheet-bg.on{display:block}
+.sheet h2{margin:0 0 8px;font-size:18px}
+.note{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;display:none;z-index:20;max-width:90%}
+.toast.on{display:block}
+h3{font-size:16px;margin:0 0 8px}
+</style>
+</head>
+<body>
+<header id="title">ピンログ</header>
+<main>
+  <!-- 記録 -->
+  <section id="v-rec" class="view on">
+    <button id="recBtn" class="big" disabled>位置を取得中…</button>
+    <div class="card" style="margin-top:16px">
+      <div id="accText" class="sub">GPSを待っています</div>
+      <div id="posText" class="sub"></div>
+    </div>
+    <div class="card">
+      <h3>最近の記録</h3>
+      <div id="recent" class="sub">まだありません</div>
+    </div>
+  </section>
+
+  <!-- 一覧 -->
+  <section id="v-list" class="view">
+    <input id="q" type="search" placeholder="名前・備考で検索">
+    <div class="row" style="margin-top:8px">
+      <select id="catFilter"></select>
+      <select id="sortSel">
+        <option value="new">新しい順</option>
+        <option value="near">近い順</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+    <div id="count" class="sub" style="margin:12px 0 8px"></div>
+    <div id="list"></div>
+  </section>
+
+  <!-- 出力 -->
+  <section id="v-exp" class="view">
+    <div class="card">
+      <h3>地図用ファイルを出力</h3>
+      <label for="expCat">対象</label>
+      <select id="expCat"></select>
+      <label for="expFmt">形式</label>
+      <select id="expFmt">
+        <option value="kml">KML(Googleマイマップ推奨)</option>
+        <option value="csv">CSV</option>
+        <option value="gpx">GPX</option>
+      </select>
+      <div class="row" style="margin-top:16px">
+        <button id="expShare" class="btn pri">共有・保存</button>
+      </div>
+      <div class="note">マイマップに取り込むときは、同じカテゴリの古いレイヤを削除してから新しいファイルを読み込んでください。</div>
+    </div>
+    <div class="card">
+      <h3>バックアップ</h3>
+      <p class="sub" style="margin-top:0">機種変更やブラウザのデータ消去に備えて、ときどき書き出してください。</p>
+      <div class="row">
+        <button id="bkOut" class="btn">書き出し</button>
+        <button id="bkIn" class="btn">読み込み</button>
+      </div>
+      <input id="bkFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div class="card sub" id="stat"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-v="rec" class="on">記録</button>
+  <button data-v="list">一覧</button>
+  <button data-v="exp">出力</button>
+</nav>
+
+<!-- 編集シート -->
+<div id="sheetBg" class="sheet-bg"></div>
+<div id="edit" class="sheet">
+  <h2 id="editTitle">地点を記録</h2>
+  <div id="dupWarn" class="note" style="display:none"></div>
+  <label for="fName">名前</label>
+  <input id="fName" placeholder="未入力なら後で付けられます">
+  <label for="fCat">カテゴリ</label>
+  <input id="fCat" list="catList" placeholder="例:駐車場、食事、仕事">
+  <datalist id="catList"></datalist>
+  <label for="fNote">備考</label>
+  <textarea id="fNote" placeholder="入口は裏側、など"></textarea>
+  <div id="fMeta" class="sub" style="margin-top:8px"></div>
+  <div class="row" style="margin-top:16px">
+    <button id="fCancel" class="btn">キャンセル</button>
+    <button id="fSave" class="btn pri">保存</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button id="fDel" class="btn warn" style="display:none">この地点を削除</button>
+  </div>
+</div>
+
+<!-- 地点アクションシート -->
+<div id="act" class="sheet">
+  <h2 id="actTitle"></h2>
+  <div id="actMeta" class="sub"></div>
+  <div style="display:grid;gap:8px;margin-top:16px">
+    <a id="actNav" class="btn pri" style="text-align:center;text-decoration:none">ナビ開始</a>
+    <a id="actMap" class="btn" style="text-align:center;text-decoration:none">Googleマップで表示</a>
+    <button id="actEdit" class="btn">編集</button>
+    <button id="actClose" class="btn">閉じる</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+const KEY = 'pinlog.points.v1';
+const DUP_M = 30;           // この距離以内に既存地点があれば警告
+const GOOD_ACC = 30;        // 誤差がこれ以下なら「良好」
+
+// ---------- データ ----------
+let points = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(points)); }catch(e){ toast('保存に失敗しました:' + e.message); } }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+// ---------- ユーティリティ ----------
+const $ = id => document.getElementById(id);
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function dist(a, b){ // メートル
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const h = Math.sin(dLat/2)**2 + Math.cos(a.lat*r) * Math.cos(b.lat*r) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function fmtDist(m){ return m < 1000 ? Math.round(m) + 'm' : (m/1000).toFixed(m < 10000 ? 1 : 0) + 'km'; }
+function fmtDate(iso){ const d = new Date(iso); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+const dispName = p => p.name || '(名前なし)';
+const navUrl = p => `google.navigation:q=${p.lat},${p.lng}`;
+const navWebUrl = p => `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving`;
+const mapUrl = p => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+const cats = () => [...new Set(points.map(p => p.category).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ja'));
+
+// ---------- 画面切替 ----------
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
+function show(v){
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  if (v === 'list') renderList();
+  if (v === 'exp') renderExport();
+  window.scrollTo(0, 0);
+}
+
+// ---------- GPS ----------
+let fix = null;
+function startGps(){
+  if (!('geolocation' in navigator)) { $('accText').textContent = 'この端末では位置情報が使えません'; return; }
+  navigator.geolocation.watchPosition(pos => {
+    fix = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, t: pos.timestamp };
+    const good = fix.acc <= GOOD_ACC;
+    $('accText').innerHTML = `誤差 約<b class="${good ? 'acc-good' : 'acc-bad'}">${Math.round(fix.acc)}m</b>` + (good ? '(良好)' : '(屋外で少し待つと改善します)');
+    $('posText').textContent = `${fix.lat.toFixed(6)}, ${fix.lng.toFixed(6)}`;
+    $('recBtn').disabled = false; $('recBtn').textContent = 'ここを記録';
+  }, err => {
+    const msg = { 1: '位置情報の許可がありません。ブラウザの設定で許可してください', 2: '位置を取得できません', 3: '位置の取得がタイムアウトしました' }[err.code] || err.message;
+    $('accText').textContent = msg;
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+}
+
+// ---------- 記録・編集 ----------
+let editing = null; // {isNew, data}
+$('recBtn').onclick = () => {
+  if (!fix) return;
+  if (Date.now() - fix.t > 60000) { toast('位置が古いため更新を待っています'); return; }
+  const p = { id: uid(), lat: +fix.lat.toFixed(6), lng: +fix.lng.toFixed(6), accuracy: Math.round(fix.acc),
+              recordedAt: new Date().toISOString(), name: '', note: '', category: '' };
+  openEdit(p, true);
+};
+function openEdit(p, isNew){
+  editing = { isNew, data: p };
+  $('editTitle').textContent = isNew ? '地点を記録' : '地点を編集';
+  $('fName').value = p.name; $('fCat').value = p.category; $('fNote').value = p.note;
+  $('fMeta').textContent = `${p.lat}, ${p.lng} ・ 誤差 ${p.accuracy ?? '-'}m ・ ${fmtDate(p.recordedAt)}`;
+  $('fDel').style.display = isNew ? 'none' : '';
+  $('catList').innerHTML = cats().map(c => `<option value="${esc(c)}">`).join('');
+  const near = points.filter(q => q.id !== p.id).map(q => ({ q, d: dist(p, q) })).filter(x => x.d <= DUP_M).sort((a,b) => a.d - b.d);
+  if (isNew && near.length) {
+    $('dupWarn').style.display = '';
+    $('dupWarn').textContent = `近くに「${dispName(near[0].q)}」があります(${fmtDist(near[0].d)})。重複していないか確認してください。`;
+  } else $('dupWarn').style.display = 'none';
+  openSheet('edit');
+}
+$('fSave').onclick = () => {
+  const p = editing.data;
+  p.name = $('fName').value.trim(); p.category = $('fCat').value.trim(); p.note = $('fNote').value.trim();
+  p.updatedAt = new Date().toISOString();
+  if (editing.isNew) points.unshift(p);
+  save(); closeSheets(); renderRecent(); renderList();
+  toast(editing.isNew ? '記録しました' : '更新しました');
+};
+$('fCancel').onclick = closeSheets;
+let delArmed = false;
+$('fDel').onclick = () => {
+  if (!delArmed) { delArmed = true; $('fDel').textContent = 'もう一度押すと削除します'; setTimeout(() => { delArmed = false; $('fDel').textContent = 'この地点を削除'; }, 3000); return; }
+  delArmed = false; $('fDel').textContent = 'この地点を削除';
+  points = points.filter(q => q.id !== editing.data.id);
+  save(); closeSheets(); renderRecent(); renderList(); toast('削除しました');
+};
+
+// ---------- シート ----------
+function openSheet(id){ $('sheetBg').classList.add('on'); $(id).classList.add('on'); }
+function closeSheets(){ document.querySelectorAll('.sheet,.sheet-bg').forEach(e => e.classList.remove('on')); }
+$('sheetBg').onclick = closeSheets;
+
+let actP = null;
+function openAct(p){
+  actP = p;
+  $('actTitle').textContent = dispName(p);
+  const d = fix ? ' ・ ここから ' + fmtDist(dist(fix, p)) : '';
+  $('actMeta').innerHTML = (p.category ? `<span class="tag">${esc(p.category)}</span>` : '') + esc(fmtDate(p.recordedAt)) + esc(d) + (p.note ? `<div class="note">${esc(p.note)}</div>` : '');
+  $('actNav').href = /Android/i.test(navigator.userAgent) ? navUrl(p) : navWebUrl(p);
+  $('actMap').href = mapUrl(p);
+  openSheet('act');
+}
+$('actEdit').onclick = () => { closeSheets(); openEdit(actP, false); };
+$('actClose').onclick = closeSheets;
+
+// ---------- 一覧 ----------
+function itemHtml(p){
+  const d = fix ? `<span class="sub" style="float:right">${fmtDist(dist(fix, p))}</span>` : '';
+  return `<button class="item" data-id="${p.id}">${d}<div class="t ${p.name ? '' : 'unnamed'}">${esc(dispName(p))}</div>
+    <div class="sub">${p.category ? `<span class="tag">${esc(p.category)}</span>` : ''}${esc(fmtDate(p.recordedAt))}</div></button>`;
+}
+function bindItems(root){ root.querySelectorAll('.item').forEach(b => b.onclick = () => openAct(points.find(p => p.id === b.dataset.id))); }
+function renderRecent(){
+  const r = points.slice().sort((a,b) => b.recordedAt.localeCompare(a.recordedAt)).slice(0, 3);
+  $('recent').innerHTML = r.length ? r.map(itemHtml).join('') : 'まだありません';
+  bindItems($('recent'));
+}
+function renderCatSelect(sel, allLabel){
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${allLabel}</option>` + cats().map(c => `<option>${esc(c)}</option>`).join('') + (points.some(p => !p.category) ? '<option value="__none">(カテゴリなし)</option>' : '');
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+const byCat = (c) => p => c === '' ? true : c === '__none' ? !p.category : p.category === c;
+function renderList(){
+  renderCatSelect($('catFilter'), 'すべてのカテゴリ');
+  const q = $('q').value.trim().toLowerCase();
+  let r = points.filter(byCat($('catFilter').value)).filter(p => !q || (p.name + ' ' + p.note + ' ' + p.category).toLowerCase().includes(q));
+  const s = $('sortSel').value;
+  if (s === 'near' && fix) r.sort((a,b) => dist(fix, a) - dist(fix, b));
+  else if (s === 'name') r.sort((a,b) => dispName(a).localeCompare(dispName(b), 'ja'));
+  else r.sort((a,b) => b.recordedAt.localeCompare(a.recordedAt));
+  $('count').textContent = `${r.length}件`;
+  $('list').innerHTML = r.map(itemHtml).join('') || '<div class="sub">該当する地点がありません</div>';
+  bindItems($('list'));
+}
+['q','catFilter','sortSel'].forEach(id => $(id).addEventListener('input', renderList));
+
+// ---------- 出力 ----------
+function renderExport(){
+  renderCatSelect($('expCat'), 'すべて');
+  const unnamed = points.filter(p => !p.name).length;
+  $('stat').textContent = `登録 ${points.length}件` + (unnamed ? `(うち名前なし ${unnamed}件)` : '');
+}
+const xml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+function descText(p){
+  return [p.note, `記録: ${fmtDate(p.recordedAt)}`, `ナビ: ${navWebUrl(p)}`].filter(Boolean).join('\n');
+}
+function toKML(list, title){
+  const groups = {};
+  list.forEach(p => (groups[p.category || '未分類'] ||= []).push(p));
+  const pm = p => `      <Placemark>
+        <name>${xml(dispName(p))}</name>
+        <description>${xml(descText(p))}</description>
+        <ExtendedData>
+          <Data name="カテゴリ"><value>${xml(p.category)}</value></Data>
+          <Data name="備考"><value>${xml(p.note)}</value></Data>
+          <Data name="記録日時"><value>${xml(p.recordedAt)}</value></Data>
+          <Data name="GPS誤差m"><value>${xml(p.accuracy)}</value></Data>
+          <Data name="ナビ"><value>${xml(navWebUrl(p))}</value></Data>
+        </ExtendedData>
+        <Point><coordinates>${p.lng},${p.lat},0</coordinates></Point>
+      </Placemark>`;
+  const folders = Object.keys(groups).sort((a,b) => a.localeCompare(b, 'ja')).map(c =>
+    `    <Folder>\n      <name>${xml(c)}</name>\n${groups[c].map(pm).join('\n')}\n    </Folder>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${xml(title)}</name>
+${folders}
+  </Document>
+</kml>
+`;
+}
+function toCSV(list){
+  const c = v => { const s = String(v ?? ''); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const head = ['name','latitude','longitude','category','note','recorded_at','accuracy_m','navi_url'];
+  const rows = list.map(p => [dispName(p), p.lat, p.lng, p.category, p.note, p.recordedAt, p.accuracy, navWebUrl(p)].map(c).join(','));
+  return '﻿' + [head.join(','), ...rows].join('\r\n') + '\r\n';
+}
+function toGPX(list, title){
+  const wpt = p => `  <wpt lat="${p.lat}" lon="${p.lng}">
+    <time>${xml(p.recordedAt)}</time>
+    <name>${xml(dispName(p))}</name>
+    <desc>${xml(descText(p))}</desc>
+    <type>${xml(p.category)}</type>
+  </wpt>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="PinLog" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${xml(title)}</name></metadata>
+${list.map(wpt).join('\n')}
+</gpx>
+`;
+}
+async function deliver(text, filename, mime){
+  const file = new File([text], filename, { type: mime });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: filename }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('ダウンロードしました');
+}
+const stamp = () => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; };
+const safe = s => s.replace(/[\\/:*?"<>|\s]+/g, '_');
+$('expShare').onclick = () => {
+  const c = $('expCat').value;
+  const list = points.filter(byCat(c));
+  if (!list.length) { toast('対象の地点がありません'); return; }
+  const label = c === '' ? '全件' : c === '__none' ? '未分類' : c;
+  const title = `ピンログ_${label}`;
+  const base = safe(`${title}_${stamp()}`);
+  const f = $('expFmt').value;
+  if (f === 'kml') deliver(toKML(list, title), base + '.kml', 'application/vnd.google-earth.kml+xml');
+  if (f === 'csv') deliver(toCSV(list), base + '.csv', 'text/csv');
+  if (f === 'gpx') deliver(toGPX(list, title), base + '.gpx', 'application/gpx+xml');
+};
+
+// ---------- バックアップ ----------
+$('bkOut').onclick = () => deliver(JSON.stringify({ app: 'pinlog', version: 1, exportedAt: new Date().toISOString(), points }, null, 1), `pinlog_backup_${stamp()}.json`, 'application/json');
+$('bkIn').onclick = () => $('bkFile').click();
+$('bkFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    const arr = Array.isArray(data) ? data : data.points;
+    if (!Array.isArray(arr)) throw new Error('形式が違います');
+    const ids = new Set(points.map(p => p.id));
+    let added = 0;
+    arr.forEach(p => { if (p && typeof p.lat === 'number' && typeof p.lng === 'number' && !ids.has(p.id)) { points.push({ name:'', note:'', category:'', ...p, id: p.id || uid() }); added++; } });
+    save(); renderExport(); renderRecent();
+    toast(`${added}件を追加しました(重複は除外)`);
+  } catch (err) { toast('読み込めませんでした:' + err.message); }
+  e.target.value = '';
+};
+
+// ---------- 起動 ----------
+renderRecent();
+startGps();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
